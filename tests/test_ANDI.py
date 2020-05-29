@@ -24,8 +24,8 @@ import pickle
 from copy import deepcopy
 
 # 3rd party
-import pytest
 import deprecation
+import pytest
 
 # pyms
 from pyms.GCMS.Class import GCMS_data
@@ -41,93 +41,92 @@ def andi(datadir):
 	return ANDI_reader(datadir / "gc01_0812_066.cdf")
 
 
-"""
-@pytest.fixture(scope="module")
-def im_andi(data):
-	# build an intensity matrix object from the data
-	return build_intensity_matrix(data)
-
-
-@pytest.fixture(scope="module")
-def tic_andi(data):
-	# get the TIC
-	return deepcopy(data.tic)
-
-
-@pytest.fixture(scope="module")
-def im_i_andi(data):
-	# build an intensity matrix object from the data
-	return build_intensity_matrix_i(data)
-
-
-@pytest.fixture(scope="function")
-def peak_list(im_i):
-	im_i = deepcopy(im_i)
-	
-	# Intensity matrix size (scans, masses)
-	n_scan, n_mz = im_i.size
-	
-	# noise filter and baseline correct
-	for ii in range(n_mz):
-		ic = im_i.get_ic_at_index(ii)
-		ic_smooth = savitzky_golay(ic)
-		ic_bc = tophat(ic_smooth, struct="1.5m")
-		im_i.set_ic_at_index(ii, ic_bc)
-	
-	# Use Biller and Biemann technique to find apexing ions at a scan
-	# default is maxima over three scans and not to combine with any neighbouring
-	# scan.
-	peak_list = BillerBiemann(im_i, points=9, scans=2)
-	return peak_list
-
-
-@pytest.fixture(scope="function")
-def filtered_peak_list(im_i, peak_list):
-	# peak_list = deepcopy(peak_list)
-	# do peak detection on pre-trimmed data
-	# trim by relative intensity
-	apl = rel_threshold(peak_list, 2, copy_peaks=False)
-	
-	# trim by threshold
-	new_peak_list = num_ions_threshold(apl, 3, 30, copy_peaks=False)
-	
-	# ignore TMS ions and set mass range
-	for peak in new_peak_list:
-		peak.crop_mass(50, 400)
-		peak.null_mass(73)
-		peak.null_mass(147)
-		
-		# find area
-		area = peak_sum_area(im_i, peak)
-		peak.area = area
-		area_dict = peak_top_ion_areas(im_i, peak)
-		peak.ion_areas = area_dict
-	
-	return new_peak_list
-
-
-@pytest.fixture(scope="session")
-def peak(im_i):
-	scan_i = im_i.get_index_at_time(31.17 * 60.0)
-	ms = im_i.get_ms_at_index(scan_i)
-	return Peak(12.34, ms)
-
-
-@pytest.fixture(scope="session")
-def ms(im_i):
-	return deepcopy(im_i.get_ms_at_index(0))
-
-
-@pytest.fixture(scope="session")
-def scan(data):
-	# return deepcopy(im_i.get_scan_at_index(0))
-	return deepcopy(data.scan_list[0])
-
-
-@pytest.fixture(scope="function")
-def expr(filtered_peak_list):
-	# create an experiment
-	return Experiment("ELEY_1_SUBTRACT", filtered_peak_list)"""
+# @pytest.fixture(scope="module")
+# def im_andi(data):
+# 	# build an intensity matrix object from the data
+# 	return build_intensity_matrix(data)
+#
+#
+# @pytest.fixture(scope="module")
+# def tic_andi(data):
+# 	# get the TIC
+# 	return deepcopy(data.tic)
+#
+#
+# @pytest.fixture(scope="module")
+# def im_i_andi(data):
+# 	# build an intensity matrix object from the data
+# 	return build_intensity_matrix_i(data)
+#
+#
+# @pytest.fixture(scope="function")
+# def peak_list(im_i):
+# 	im_i = deepcopy(im_i)
+#
+# 	# Intensity matrix size (scans, masses)
+# 	n_scan, n_mz = im_i.size
+#
+# 	# noise filter and baseline correct
+# 	for ii in range(n_mz):
+# 		ic = im_i.get_ic_at_index(ii)
+# 		ic_smooth = savitzky_golay(ic)
+# 		ic_bc = tophat(ic_smooth, struct="1.5m")
+# 		im_i.set_ic_at_index(ii, ic_bc)
+#
+# 	# Use Biller and Biemann technique to find apexing ions at a scan
+# 	# default is maxima over three scans and not to combine with any neighbouring
+# 	# scan.
+# 	peak_list = BillerBiemann(im_i, points=9, scans=2)
+# 	return peak_list
+#
+#
+# @pytest.fixture(scope="function")
+# def filtered_peak_list(im_i, peak_list):
+# 	# peak_list = deepcopy(peak_list)
+# 	# do peak detection on pre-trimmed data
+# 	# trim by relative intensity
+# 	apl = rel_threshold(peak_list, 2, copy_peaks=False)
+#
+# 	# trim by threshold
+# 	new_peak_list = num_ions_threshold(apl, 3, 30, copy_peaks=False)
+#
+# 	# ignore TMS ions and set mass range
+# 	for peak in new_peak_list:
+# 		peak.crop_mass(50, 400)
+# 		peak.null_mass(73)
+# 		peak.null_mass(147)
+#
+# 		# find area
+# 		area = peak_sum_area(im_i, peak)
+# 		peak.area = area
+# 		area_dict = peak_top_ion_areas(im_i, peak)
+# 		peak.ion_areas = area_dict
+#
+# 	return new_peak_list
+#
+#
+# @pytest.fixture(scope="session")
+# def peak(im_i):
+# 	scan_i = im_i.get_index_at_time(31.17 * 60.0)
+# 	ms = im_i.get_ms_at_index(scan_i)
+# 	return Peak(12.34, ms)
+#
+#
+# @pytest.fixture(scope="session")
+# def ms(im_i):
+# 	return deepcopy(im_i.get_ms_at_index(0))
+#
+#
+# @pytest.fixture(scope="session")
+# def scan(data):
+# 	# return deepcopy(im_i.get_scan_at_index(0))
+# 	return deepcopy(data.scan_list[0])
+#
+#
+# @pytest.fixture(scope="function")
+# def expr(filtered_peak_list):
+# 	# create an experiment
+# 	return Experiment("ELEY_1_SUBTRACT", filtered_peak_list)
 
 
 def test_ANDI_reader(datadir):
@@ -135,7 +134,7 @@ def test_ANDI_reader(datadir):
 	for obj in [*test_numbers, *test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			ANDI_reader(obj)
-	
+
 	with pytest.raises(FileNotFoundError):
 		ANDI_reader(test_string)
 
@@ -146,14 +145,14 @@ def test_ANDI_reader(datadir):
 
 def test_GCMS_data(andi):
 	assert isinstance(andi, GCMS_data)
-	
+
 	GCMS_data(andi.time_list, andi.scan_list)
-	
+
 	# Errors
 	for obj in [test_string, *test_numbers, test_list_strs, test_dict]:
 		with pytest.raises(TypeError):
 			GCMS_data(obj, andi.scan_list)
-	
+
 	for obj in [test_string, *test_numbers, *test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			GCMS_data(andi.time_list, obj)
@@ -203,7 +202,7 @@ def test_info(capsys, andi):
 def test_scan_list(andi):
 	# raw scans
 	scans = andi.scan_list
-	
+
 	assert isinstance(scans, list)
 	assert isinstance(scans[0], Scan)
 	assert len(scans[0]) == 622
@@ -211,16 +210,16 @@ def test_scan_list(andi):
 	# 1st mass value for 1st scan
 	assert isinstance(scans[0].mass_list[0], float)
 	assert scans[0].mass_list[0] == 50.099998474121094
-	
+
 	assert isinstance(scans[0].intensity_list, list)
 	# 1st intensity value for 1st scan
 	assert isinstance(scans[0].intensity_list[0], float)
 	assert scans[0].intensity_list[0] == 22128.0
-	
+
 	# minimum mass found in 1st scan
 	assert isinstance(scans[0].min_mass, float)
 	assert scans[0].min_mass == 50.099998474121094
-	
+
 	# maximum mass found in 1st scan
 	assert isinstance(scans[0].max_mass, float)
 	assert scans[0].max_mass == 599.4000244140625
@@ -232,22 +231,22 @@ def test_tic(andi):
 	# number of scans in TIC
 	assert len(tic) == 9865
 	assert len(tic) == len(andi.time_list)
-	
+
 	# start time of TIC
 	assert isinstance(tic.get_time_at_index(0), float)
 	assert tic.get_time_at_index(0) == 305.582
 	assert isinstance(tic.get_index_at_time(305.6), int)
 	assert tic.get_index_at_time(305.6) == 0
 	assert tic.get_index_at_time(306) == 1
-	
+
 	assert isinstance(tic.get_intensity_at_index(44), float)
 	assert tic.get_intensity_at_index(44) == 21685482.0
-	
+
 	assert isinstance(tic.time_list, list)
 	assert tic.time_list[0] == 305.582
-	
+
 	assert isinstance(tic.time_step, float)
-	
+
 	assert isinstance(tic.is_tic(), bool)
 	assert tic.is_tic()
 
@@ -256,43 +255,43 @@ def test_trim(andi):
 	# time
 	trimmed = deepcopy(andi)
 	trimmed.trim("6.5m", "21m")
-	
+
 	assert trimmed.min_mass == 50.099998474121094
 	assert trimmed.max_mass == 542.0
-	
+
 	time = trimmed.time_list
 	assert len(time) == 2319
 	assert time[0] == 390.404
 	assert trimmed.get_index_at_time(400.0) == 26
-	
+
 	scans = trimmed.scan_list
 	assert scans[0].mass_list[0] == 50.099998474121094
-	
+
 	# Scans
 	trimmed = deepcopy(andi)
 	trimmed.trim(10, 2000)
-	
+
 	assert trimmed.min_mass == 50.0
 	assert trimmed.max_mass == 599.9000244140625
-	
+
 	time = trimmed.time_list
 	assert len(time) == 1992
 	assert time[0] == 308.96000000000004
 	assert trimmed.get_index_at_time(1000.0) == 1841
-	
+
 	scans = trimmed.scan_list
 	assert scans[0].mass_list[0] == 50.099998474121094
-	
+
 	trimmed.trim(end=1000)
 	assert len(trimmed.time_list) == 1001
-	
+
 	trimmed.trim(begin=2)
 	assert len(trimmed.time_list) == 1000
-	
+
 	# Errors
 	with pytest.raises(SyntaxError):
 		trimmed.trim()
-	
+
 	for obj in [*test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			trimmed.trim(begin=obj)
@@ -302,12 +301,12 @@ def test_trim(andi):
 
 def test_write(andi, outputdir):
 	andi.write(outputdir / "andi_gcms_data")
-	
+
 	# Errors
 	for obj in [*test_sequences, test_dict, *test_numbers]:
 		with pytest.raises(TypeError):
 			andi.write(obj)
-	
+
 	# Read .I.csv and check values
 	assert (outputdir / "andi_gcms_data.I.csv").exists()
 	i_csv = list(csv.reader((outputdir / "andi_gcms_data.I.csv").open()))
@@ -375,7 +374,7 @@ def test_write(andi, outputdir):
 			381.0, 355.0, 428.0, 338.0, 558.0, 452.0, 379.0, 453.0, 554.0, 415.0, 365.0,
 			586.0, 524.0, 428.0, 653.0, 341.0,
 			]
-	
+
 	assert [float(x) for x in i_csv[50]] == [
 			22336.0, 10586.0, 30328.0, 27512.0, 62848.0, 52512.0, 70736.0, 109832.0,
 			144896.0, 19272.0, 21608.0, 28632.0, 88808.0, 9246.0, 13705.0, 7454.0,
@@ -444,7 +443,7 @@ def test_write(andi, outputdir):
 			471.0, 342.0, 419.0, 411.0, 419.0, 377.0, 600.0, 400.0, 307.0, 436.0,
 			427.0, 390.0, 486.0, 434.0, 402.0, 332.0, 342.0, 614.0, 527.0, 532.0,
 			]
-	
+
 	assert [float(x) for x in i_csv[500]] == [
 			1269.0, 1649.0, 3297.0, 1152.0, 590.0, 4132.0, 5335.0, 22784.0, 1826.0,
 			568.0, 281.0, 214.0, 230.0, 540.0, 399.0, 2524.0, 4016.0, 11251.0, 1296.0,
@@ -457,7 +456,7 @@ def test_write(andi, outputdir):
 			166.0, 690.0, 198.0, 379.0, 167.0, 363.0, 162.0, 619.0, 220.0, 6843.0,
 			1986.0, 1314.0, 272.0,
 			]
-	
+
 	# Read .mz.csv and check values
 	assert (outputdir / "andi_gcms_data.mz.csv").exists()
 	i_csv = list(csv.reader((outputdir / "andi_gcms_data.mz.csv").open()))
@@ -532,7 +531,7 @@ def test_write(andi, outputdir):
 			587.50, 588.10, 588.60, 589.20, 590.10, 590.70, 591.20, 591.90, 592.70,
 			593.60, 594.20, 595.50, 596.30, 597.50, 598.90, 599.8000,
 			]
-	
+
 	assert [float(x) for x in i_csv[50]] == [
 			50.10, 51.10, 53.10, 54.20, 55.10, 56.10, 57.20, 58.20, 59.10, 60.10,
 			61.20, 62.20, 63.10, 64.10, 65.20, 66.20, 67.20, 69.20, 70.10, 73.20,
@@ -604,7 +603,7 @@ def test_write(andi, outputdir):
 			582.30, 584.20, 585.10, 585.70, 586.60, 587.50, 588.30, 589.0, 589.80,
 			590.80, 591.70, 592.20, 592.70, 593.30, 594.30, 595.30, 595.90, 596.40,
 			597.0, 597.60, 598.40, 599.30, 599.9000]
-	
+
 	assert [float(x) for x in i_csv[500]] == [
 			50.10, 51.10, 52.0, 53.10, 54.10, 55.0, 56.10, 57.10, 58.10, 59.0, 60.90,
 			63.0, 66.20, 67.10, 68.10, 69.0, 70.10, 71.10, 72.10, 73.0, 73.90, 75.10,
@@ -621,12 +620,12 @@ def test_write(andi, outputdir):
 
 def test_write_intensities_stream(andi, outputdir):
 	andi.write_intensities_stream(outputdir / "andi_intensity_stream.csv")
-	
+
 	# Errors
 	for obj in [test_list_strs, test_dict, test_list_ints, test_tuple, *test_numbers]:
 		with pytest.raises(TypeError):
 			andi.write_intensities_stream(obj)
-	
+
 	# Read and check values
 	assert (outputdir / "andi_intensity_stream.csv").exists()
 	intensity_stream = list((outputdir / "andi_intensity_stream.csv").open().readlines())
@@ -639,12 +638,12 @@ def test_write_intensities_stream(andi, outputdir):
 
 def test_dump(andi, outputdir):
 	andi.dump(outputdir / "ANDI_dump.dat")
-	
+
 	# Errors
 	for obj in [test_list_strs, test_dict, test_list_ints, test_tuple, *test_numbers]:
 		with pytest.raises(TypeError):
 			andi.dump(obj)
-	
+
 	# Read and check values
 	assert (outputdir / "ANDI_dump.dat").exists()
 	loaded_data = pickle.load((outputdir / "ANDI_dump.dat").open("rb"))
@@ -702,7 +701,7 @@ def test_get_index_at_time(andi):
 	# index of 400sec in time_list
 	assert isinstance(andi.get_index_at_time(400.0), int)
 	assert andi.get_index_at_time(400.0) == 252
-	
+
 	# Errors
 	for obj in [test_dict, *test_lists, test_string, test_tuple]:
 		with pytest.raises(TypeError):
@@ -716,7 +715,7 @@ def test_get_index_at_time(andi):
 def test_get_time_at_index(andi):
 	assert isinstance(andi.get_time_at_index(400), float)
 	assert andi.get_time_at_index(400) == 455.71
-	
+
 	# Errors
 	for obj in [test_dict, *test_lists, test_string, test_tuple]:
 		with pytest.raises(TypeError):

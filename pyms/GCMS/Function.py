@@ -45,11 +45,11 @@ def diff(data1, data2):
 	:author: Andrew Isaac
 	:author: Vladimir Likic
 	"""
-	
+
 	# get time attributes
 	time_list1 = data1.get_time_list()
 	time_list2 = data2.get_time_list()
-	
+
 	# First, check if two data sets have the same number of retention times.
 	if len(time_list1) != len(time_list2):
 		print(" The number of retention time points differ.")
@@ -61,18 +61,18 @@ def diff(data1, data2):
 		time_rmsd = rmsd(time_list1, time_list2)
 		print(" Data sets have the same number of time points.")
 		print(f"   Time RMSD: {time_rmsd:.2e}")
-	
+
 	# Second, check if each scan has the same number of m/z intensities
 	print(" Checking for consistency in scan lengths ...", end='')
 	sys.stdout.flush()
-	
+
 	scan_list1 = data1.get_scan_list()
 	scan_list2 = data2.get_scan_list()
 	if not len(scan_list1) == len(scan_list2):
 		# since the number of rention times are the same, this indicated
 		# some unexpected problem with data
 		raise ValueError("inconsistency in data detected")
-	
+
 	for ii in range(len(scan_list1)):
 		scan1 = scan_list1[ii]
 		scan2 = scan_list2[ii]
@@ -82,16 +82,16 @@ def diff(data1, data2):
 			print(f"\n Different number of points detected in scan no. {ii:d}")
 			print(" Data sets are different.")
 			return
-	
+
 	print("OK")
-	
+
 	# Third, if here, calculate the max RMSD for m/z and intensities
 	print(" Calculating maximum RMSD for m/z values and intensities ...", end='')
 	sys.stdout.flush()
-	
+
 	max_mass_rmsd = 0.0
 	max_intensity_rmsd = 0.0
-	
+
 	for ii in range(len(scan_list1)):
 		scan1 = scan_list1[ii]
 		scan2 = scan_list2[ii]
@@ -105,7 +105,7 @@ def diff(data1, data2):
 		intensity_rmsd = rmsd(intensity_list1, intensity_list2)
 		if intensity_rmsd > max_intensity_rmsd:
 			max_intensity_rmsd = intensity_rmsd
-	
+
 	print(f"\n   Max m/z RMSD: {max_mass_rmsd:.2e}")
 	print(f"   Max intensity RMSD: {max_intensity_rmsd:.2e}")
 
@@ -127,10 +127,10 @@ def ic_window_points(ic, window_sele, half_window=False):
 
 	:author: Vladimir Likic
 	"""
-	
+
 	if not isinstance(window_sele, (int, str)):
 		raise TypeError("'window_sele' must be either an integer or a string")
-	
+
 	if isinstance(window_sele, int):
 		if half_window:
 			if window_sele % 2 == 0:
@@ -142,17 +142,17 @@ def ic_window_points(ic, window_sele, half_window=False):
 	else:
 		time = time_str_secs(window_sele)
 		time_step = ic.time_step
-		
+
 		if half_window:
 			time = time * 0.5
-		
+
 		points = int(math.floor(time / time_step))
-	
+
 	if half_window:
 		if points < 1:
 			raise ValueError(f"window too small (half window={points:d})")
 	else:
 		if points < 2:
 			raise ValueError(f"window too small (window={points})")
-	
+
 	return points

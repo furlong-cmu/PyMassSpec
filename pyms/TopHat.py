@@ -56,24 +56,24 @@ def tophat(ic, struct=None):
     :author: Vladimir Likic
     :author: Dominic Davis-Foster (type assertions)
     """
-    
+
     if not isinstance(ic, IonChromatogram):
         raise TypeError("'ic' must be an IonChromatogram object")
     ia = copy.deepcopy(ic.intensity_array)
-    
+
     if struct:
         struct_pts = ic_window_points(ic, struct)
     else:
         struct_pts = int(round(ia.size * _STRUCT_ELM_FRAC))
-    
+
     #    print(" -> Top-hat: structural element is %d point(s)" % ( struct_pts ))
-    
+
     str_el = numpy.repeat([1], struct_pts)
-    ia = ndimage.white_tophat(ia, None, str_el)
-    
+    ia = ndimage.white_tophat(ia, footprint=str_el)
+
     ic_bc = copy.deepcopy(ic)
     ic_bc.intensity_array = ia
-    
+
     return ic_bc
 
 
@@ -81,7 +81,7 @@ def tophat_im(im, struct=None):
     """
     Top-hat baseline correction on Intensity Matrix
 
-        Wraps around the TopHat function above
+    Wraps around the TopHat function above
 
     :param im: The input Intensity Matrix
     :type im: pyms.IntensityMatrix.IntensityMatrix
@@ -90,20 +90,20 @@ def tophat_im(im, struct=None):
 
     :return: Top-hat corrected IntensityMatrix Matrix
     :rtype: pyms.IntensityMatrix.IntensityMatrix
-    
+
     :author: Sean O'Callaghan
     """
-    
+
     if not isinstance(im, IntensityMatrix):
         raise TypeError("'im' must be an IntensityMatrix object")
 
     n_scan, n_mz = im.size
-    
+
     im_smooth = copy.deepcopy(im)
-    
+
     for ii in range(n_mz):
         ic = im_smooth.get_ic_at_index(ii)
         ic_smooth = tophat(ic, struct)
         im_smooth.set_ic_at_index(ii, ic_smooth)
-    
+
     return im_smooth

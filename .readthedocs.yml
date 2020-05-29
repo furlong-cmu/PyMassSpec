@@ -1,3 +1,5 @@
+# This file is managed by `git_helper`. Don't edit it directly
+
 # .readthedocs.yml
 # Read the Docs configuration file
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
@@ -8,7 +10,7 @@ version: 2
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   builder: html
-  configuration: UserGuide/conf.py
+  configuration: doc-source/conf.py
 
 # Optionally build your docs in additional formats such as PDF and ePub
 formats: all
@@ -17,4 +19,5 @@ formats: all
 python:
   version: 3.6
   install:
-    - requirements: UserGuide/requirements.txt
+    - requirements: requirements.txt
+    - requirements: doc-source/requirements.txt

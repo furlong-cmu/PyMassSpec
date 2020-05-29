@@ -46,9 +46,9 @@ def add_gaussc_noise(im, scale):
 
     :author: Sean O'Callaghan
     """
-    
+
     n_scan, n_mz = im.size
-    
+
     for i in range(n_mz):
         ic = im.get_ic_at_index(i)
         add_gaussc_noise_ic(ic, scale)
@@ -62,13 +62,13 @@ def add_gaussc_noise_ic(ic, scale):
     :param ic: The ion Chromatogram
     :type ic: pyms.IonChromatogram.IonChromatogram
     :param scale: The scale of the normal distribution
-    :type scale: int
+    :type scale: float
 
     :author: Sean O'Callaghan
     """
-    
+
     noise = numpy.random.normal(0.0, scale, (len(ic)))
-    
+
     i_array_with_noise = ic.get_intensity_array() + noise
     ic.set_intensity_array(i_array_with_noise)
 
@@ -93,9 +93,9 @@ def add_gaussv_noise(im, scale, cutoff, prop):
 
     :author: Sean O'Callaghan
     """
-    
+
     n_scan, n_mz = im.size
-    
+
     for i in range(n_mz):
         ic = im.get_ic_at_index(i)
         add_gaussv_noise_ic(ic, scale, cutoff, prop)
@@ -122,27 +122,27 @@ def add_gaussv_noise_ic(ic, scale, cutoff, prop):
 
     :author: Sean O'Callaghan
     """
-    
+
     noise = numpy.zeros(len(ic))
-    
+
     i_array = ic.get_intensity_array()
     # time_list = ic.get_time_list()
-    
+
     for i in range(len(ic)):
         if i_array[i] < cutoff:
             noise[i] = numpy.random.normal(0.0, scale, 1)
         else:
             noise[i] = numpy.random.normal(0.0, scale * i_array[i] * prop, 1)
-    
+
     i_array_with_noise = noise + i_array
     ic.set_intensity_array(i_array_with_noise)
-    
+
 
 def chromatogram(n_scan, x_zero, sigma, peak_scale):
     """
     Returns a simulated ion chromatogram of a pure component
               The ion chromatogram contains a single gaussian peak.
-    
+
     :param n_scan: the number of scans
     :type n_scan: int
     :param x_zero: The apex of the peak
@@ -151,29 +151,29 @@ def chromatogram(n_scan, x_zero, sigma, peak_scale):
     :type sigma: float
     :param: peak_scale: the intensity of the peak at the apex
     :type peak_scale: float
-    
+
     :return: a list of intensities
     :rtype: list
-    
+
     :author: Sean O'Callaghan
     """
-    
+
     ic = numpy.zeros(n_scan, 'd')
-    
+
     for i in range(n_scan):
         x = float(i)
-        
+
         ic[i] = gaussian(x, x_zero, sigma, peak_scale)
-    
+
     return ic
 
 
 def gaussian(point, mean, sigma, scale):
     """
     calculates a point on a gaussian density function
-    
+
     f = s*exp(-((x-x0)^2)/(2*w^2));
-    
+
     :param point: The point currently being computed
     :type point: float
     :param mean: The apex of the peak
@@ -182,13 +182,13 @@ def gaussian(point, mean, sigma, scale):
     :type sigma: float
     :param scale: The height of the apex
     :type scale: float
-    
+
     :return: a single value from a normal distribution
     :rtype: float
-    
+
     :author: Sean O'Callaghan
     """
-    
+
     return scale * math.exp((-(point - mean) ** 2) / (2 * (sigma ** 2)))
 
 
@@ -208,16 +208,16 @@ def gcms_sim(time_list, mass_list, peak_list):
 
     :author: Sean O'Callaghan
     """
-    
+
     n_mz = len(mass_list)
     n_scan = len(time_list)
-    
+
     t1 = time_list[0]
     period = time_list[1] - t1
-    
+
     # initialise a 2D numpy array for intensity matrix
     i_array = numpy.zeros((n_scan, n_mz), 'd')
-    
+
     for peak in peak_list:
         print("-", end='')
         index = int((peak.rt - t1) / period)
@@ -229,7 +229,7 @@ def gcms_sim(time_list, mass_list, peak_list):
             ion_height = peak.get_mass_spectrum().mass_spec[i]
             ic = chromatogram(n_scan, index, sigma, ion_height)
             i_array[:, i] += ic
-    
+
     im = IntensityMatrix(time_list, mass_list, i_array)
-    
+
     return im

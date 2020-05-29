@@ -19,6 +19,19 @@
 #############################################################################
 
 
+__all__ = [
+		"test_string",
+		"test_int",
+		"test_float",
+		"test_list_ints",
+		"test_list_strs",
+		"test_dict",
+		"test_numbers",
+		"test_tuple",
+		"test_lists",
+		"test_sequences",
+		]
+
 test_string = "abcdefg"
 test_int = 1234
 test_float = 12.34

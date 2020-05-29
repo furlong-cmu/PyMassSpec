@@ -28,10 +28,10 @@ import pathlib
 import pickle
 
 # this package
-from pyms.Base import _list_types
 from pyms.Peak.Class import Peak
 from pyms.Peak.List.Function import is_peak_list
 from pyms.Utils.IO import prepare_filepath
+from pyms.Utils.Utils import is_path, is_sequence
 
 
 def store_peaks(peak_list, file_name, protocol=1):
@@ -44,17 +44,17 @@ def store_peaks(peak_list, file_name, protocol=1):
     :type file_name: str or pathlib.Path
     :param protocol:
     :type protocol:
-    
+
     :author: Andrew Isaac
     :author: Dominic Davis-Foster (type assertions and pathlib support)
-    
+
     """
-    
+
     if not is_peak_list(peak_list):
         raise TypeError("'peak_list' must be a list of Peak objects")
 
-    if not isinstance(file_name, (str, pathlib.Path)):
-        raise TypeError("'file_name' must be a string or a pathlib.Path object")
+    if not is_path(file_name):
+        raise TypeError("'file_name' must be a string or a PathLike object")
 
     file_name = prepare_filepath(file_name)
 
@@ -77,17 +77,16 @@ def load_peaks(file_name):
     :author: Dominic Davis-Foster (pathlib support)
     """
 
-    if not isinstance(file_name, (str, pathlib.Path)):
-        raise TypeError("'file_name' must be a string or a pathlib.Path object")
+    if not is_path(file_name):
+        raise TypeError("'file_name' must be a string or a PathLike object")
 
-    if not isinstance(file_name, pathlib.Path):
-        file_name = pathlib.Path(file_name)
+    file_name = prepare_filepath(file_name, mkdirs=False)
 
     fp = file_name.open('rb')
     peak_list = pickle.load(fp)
     fp.close()
 
-    if not isinstance(peak_list, _list_types):
+    if not is_sequence(peak_list):
         raise IOError("The selected file is not a List")
     if not len(peak_list) > 0 or not isinstance(peak_list[0], Peak):
         raise IOError("The selected file is not a list of Peak objects")

@@ -22,5 +22,3 @@ Utility functions for PyMassSpec wide use
 #    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 #
 #                                                                              #
 ################################################################################
-
-

@@ -1,4 +1,7 @@
-pytest
-pytest-cov
+coverage >=5.1
 coveralls
+pytest >=5.1.1
+pytest-cov >=2.8.1
 pytest-mpl
+pytest-randomly
+pytz >=2019.1

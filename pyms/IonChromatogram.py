@@ -27,6 +27,7 @@ Classes to model a GC-MS Ion Chromatogram
 import copy
 import pathlib
 import warnings
+from numbers import Number
 
 # 3rd party
 import deprecation
@@ -34,9 +35,10 @@ import numpy
 
 # this package
 from pyms import __version__
-from pyms.Base import _list_types, pymsBaseClass
+from pyms.Base import pymsBaseClass
 from pyms.Mixins import GetIndexTimeMixin, IntensityArrayMixin, TimeListMixin
 from pyms.Utils.IO import prepare_filepath
+from pyms.Utils.Utils import is_path, is_sequence
 
 
 class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetIndexTimeMixin):
@@ -54,7 +56,7 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 	:authors: Lewis Lee, Vladimir Likic, Dominic Davis-Foster (type assertions and properties)
 	"""
-	
+
 	def __init__(self, ia, time_list, mass=None):
 		"""
 		:param ia: Ion chromatogram intensity values
@@ -66,26 +68,26 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:author: Lewis Lee, Vladimir Likic
 		"""
-		
+
 		if not isinstance(ia, numpy.ndarray):
 			raise TypeError("'ia' must be a numpy array")
-		
-		if not isinstance(time_list, _list_types) or not isinstance(time_list[0], (int, float)):
+
+		if not is_sequence(time_list) or not all(isinstance(time, Number) for time in time_list):
 			raise TypeError("'time_list' must be a list of numbers")
-		
+
 		if len(ia) != len(time_list):
 			raise ValueError("Intensity array and time list differ in length")
-		
-		if mass and not isinstance(mass, (int, float)):
+
+		if mass and not isinstance(mass, Number):
 			raise TypeError("'mass' must be a number")
-		
+
 		self._intensity_array = ia
 		self._time_list = time_list
 		self._mass = mass
 		self._time_step = self.__calc_time_step()
 		self._min_rt = min(time_list)
 		self._max_rt = max(time_list)
-	
+
 	def __len__(self):
 		"""
 		Returns the length of the IonChromatogram object
@@ -95,9 +97,9 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:authors: Lewis Lee, Vladimir Likic
 		"""
-		
+
 		return self._intensity_array.size
-	
+
 	def __sub__(self, other):
 		"""
 		Subtracts another IC from the current one
@@ -105,14 +107,14 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 		:param other: Another IC
 		:type other: pyms.GCMS.IonChromatogram
 		"""
-		
+
 		ia_for_sub = other.intensity_array
-		
+
 		for i in range(self._intensity_array.size):
 			self._intensity_array[i] = self._intensity_array[i] - ia_for_sub[i]
-		
+
 		return self
-	
+
 	def __eq__(self, other):
 		"""
 		Return whether this IonChromatogram object is equal to another object
@@ -122,18 +124,18 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:rtype: bool
 		"""
-		
+
 		if isinstance(other, self.__class__):
 			return self.time_list == other.time_list \
 					and all(numpy.equal(self.intensity_array, other.intensity_array)) \
 					and self.mass == other.mass
-			
+
 		return NotImplemented
-	
+
 	def __copy__(self):
 		"""
 		Returns a new IonChromatogram containing a copy of the data in this object
-		
+
 		:rtype: pyms.IonChromatogram.IonChromatogram
 		"""
 		return IonChromatogram(
@@ -141,10 +143,10 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 			time_list=self._time_list[:],
 			mass=copy.copy(self._mass)
 			)
-	
+
 	def __deepcopy__(self, memodict={}):
 		return self.__copy__()
-	
+
 	def get_intensity_at_index(self, ix):
 		"""
 		Returns intensity at given index
@@ -157,15 +159,15 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:authors: Lewis Lee, Vladimir Likic
 		"""
-		
+
 		if not isinstance(ix, int):
 			raise TypeError("'ix' must be an integer")
-		
+
 		if ix < 0 or ix > self._intensity_array.size - 1:
 			raise IndexError("index out of bounds")
-		
+
 		return self._intensity_array[ix]
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use :attr:`pyms.IonChromatogram.IonChromatogram.mass` instead")
@@ -178,9 +180,9 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:author: Sean O'Callaghan
 		"""
-		
+
 		return self.mass
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use :attr:`pyms.IonChromatogram.IonChromatogram.time_step` instead")
@@ -193,9 +195,9 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:authors: Lewis Lee, Vladimir Likic
 		"""
-		
+
 		return self._time_step
-	
+
 	@IntensityArrayMixin.intensity_array.setter
 	def intensity_array(self, ia):
 		"""
@@ -206,15 +208,15 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:author: Vladimir Likic
 		"""
-		
-		if not isinstance(ia, _list_types):
-			raise TypeError("'intensity_array' must be a list, tuple or numpy.ndarray")
-		
+
+		if not is_sequence(ia):
+			raise TypeError("'intensity_array' must be a Sequence")
+
 		if not isinstance(ia, numpy.ndarray):
 			ia = numpy.array(ia)
-			
+
 		self._intensity_array = ia
-	
+
 	def is_tic(self):
 		"""
 		Returns whether the ion chromatogram is a total ion chromatogram (TIC)
@@ -223,9 +225,9 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:authors: Lewis Lee, Vladimir Likic
 		"""
-		
+
 		return self._mass is None
-	
+
 	@property
 	def mass(self):
 		"""
@@ -236,12 +238,12 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:author: Sean O'Callaghan
 		"""
-		
+
 		if self._mass is None:
 			warnings.warn("TIC has no m/z label", Warning)
-		
+
 		return self._mass
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use :attr:`pyms.IonChromatogram.IonChromatogram.intensity_array` instead")
@@ -254,15 +256,15 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:author: Vladimir Likic
 		"""
-		
-		if not isinstance(ia, _list_types):
-			raise TypeError("'intensity_array' must be a list, tuple or numpy.ndarray")
-		
+
+		if not is_sequence(ia):
+			raise TypeError("'intensity_array' must be a Sequence")
+
 		if not isinstance(ia, numpy.ndarray):
 			ia = numpy.array(ia)
-		
+
 		self._intensity_array = ia
-		
+
 	@property
 	def time_step(self):
 		"""
@@ -273,9 +275,9 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:authors: Lewis Lee, Vladimir Likic
 		"""
-		
+
 		return self._time_step
-	
+
 	def __calc_time_step(self):
 		"""
 		Calculates the time step
@@ -285,17 +287,17 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:authors: Lewis Lee, Vladimir Likic
 		"""
-		
+
 		td_list = []
 		for ii in range(len(self._time_list) - 1):
 			td = self._time_list[ii + 1] - self._time_list[ii]
 			td_list.append(td)
-		
+
 		td_array = numpy.array(td_list)
 		time_step = td_array.mean()
-		
+
 		return time_step
-		
+
 	def write(self, file_name, minutes=False, formatting=True):
 		"""
 		Writes the ion chromatogram to the specified file
@@ -311,24 +313,24 @@ class IonChromatogram(pymsBaseClass, TimeListMixin, IntensityArrayMixin, GetInde
 
 		:authors: Lewis Lee, Vladimir Likic, Dominic Davis-Foster (pathlib support)
 		"""
-		
-		if not isinstance(file_name, (str, pathlib.Path)):
-			raise TypeError("'file_name' must be a string or a pathlib.Path object")
-		
+
+		if not is_path(file_name):
+			raise TypeError("'file_name' must be a string or a PathLike object")
+
 		file_name = prepare_filepath(file_name)
-		
+
 		fp = file_name.open("w")
-		
+
 		time_list = copy.deepcopy(self._time_list)
-		
+
 		if minutes:
 			for ii in range(len(time_list)):
 				time_list[ii] = time_list[ii] / 60.0
-		
+
 		for ii in range(len(time_list)):
 			if formatting:
 				fp.write(f"{time_list[ii]:8.4f} {self._intensity_array[ii]:#.6e}\n")
 			else:
 				fp.write(f"{time_list[ii]} {self._intensity_array[ii]}\n")
-		
+
 		fp.close()

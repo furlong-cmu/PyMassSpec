@@ -59,7 +59,7 @@ from pyms.Noise.Analysis import window_analyzer
 tic = data.tic
 
 noise_level = window_analyzer(tic)
-noise_level
+print(noise_level)
 
 
 # Filter the Peak listusing this noise value as the cutoff.
@@ -70,7 +70,7 @@ noise_level
 
 from pyms.BillerBiemann import num_ions_threshold
 filtered_peak_list = num_ions_threshold(peak_list, n=3, cutoff=noise_level)
-filtered_peak_list[:10]
+print(filtered_peak_list[:10])
 
 
 # In[4]:

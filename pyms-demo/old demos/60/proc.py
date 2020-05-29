@@ -17,7 +17,11 @@ from pyms.Experiment import Experiment, store_expr
 
 
 # deconvolution and peak list filtering parameters
-points = 9; scans = 2; n = 3; t = 3000; r = 2
+points = 9
+scans = 2
+n = 3
+t = 3000
+r = 2
 
 andi_file = "data/a0806_077.cdf"
 

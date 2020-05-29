@@ -1,23 +1,69 @@
+# This file is managed by `git_helper`. Don't edit it directly
+
 language: python
 dist: xenial
 python:
-- '3.6'
-- '3.7'
-- '3.8'
-#- "pypy3"
+  - '3.6'
+  - '3.7'
+  - '3.8'
+
 install:
-  - pip install coveralls tox tox-travis
+
+  - pip install pip  --upgrade
+  - pip install tox tox-travis
+  - pip install coveralls
+
 script:
   - tox
 after_success:
   - coveralls
-deploy:
-  provider: pypi
-  user: DomDF
-  on:
-    tags: true
-    python: '3.6'
-  distributions: sdist bdist_wheel
-  skip_existing: true
-  password:
-    secure: c8kiGOCPwUvcXtgyY++1cRqhzxc0HGRolbiHRNZO9N8oOxX79poRvwbI/D0eW94xXWGF9V9MoKhalDvxq/jQ/AU7YMg0qnaQhleBkxSJGvEC3QSxUpiG4JOtuxJIdFXGEuH2chwqY9YLK2XyBT7NFkz8qXBvB3FVb42H7d3SCE5FWURETnq4srJknblEwNKepQeKcRrN4cyrBRbMQrn3nzdU5L0XdaO+Cy9GbCV+vhJyMuUI0YYxnpPZz6/y7X5lqSzxzkXIwaxQAazhQFSKB5vEmR0BF3DZmYl62TDNY6hUtjvrfn0mWQEIXqG8iU7g0wU/XvpqLfyO4+y3604d50gEx3G0y5wpVG7iyllsos6iLKX4spomo1qQGoEkE/Sp8EeNGP3y/iBg3uBEq54CYG5wR9QYUWqOhuh9lziJRhUpq+t1P0FOfkM8cSXGvdr9tCjStrDeac2syLKindVZy1Juc5grdJi5q686SCT7Ts46wRR4YWDxurjzDWyIvMpnRI7OXuEziPgLmeT7jRPNP3TKWcGQNuDFQ1SlPDBgaGIRO85AGpTwImXiRQMlO95emhvCVwvG+3rAvXuRpPkrJvx2XL8trDIPXqGcXkXohw/2n7jbZ4HjCUNNgZZxkyokgVbp5UL1M861KhWjIrylis4ReTt+t66Ab8kB9vSNESM=
+
+
+stages:
+  - test
+  - deploy_pypi
+  - deploy_conda
+  - deploy_releases
+
+jobs:
+  include:
+    - stage: deploy_pypi
+      python: "3.6"
+      script: skip
+      deploy:
+        on:
+          tags: true
+          repo: domdfcoding/PyMassSpec
+        provider: pypi
+        user: "DomDF"
+        password:
+          secure: c8kiGOCPwUvcXtgyY++1cRqhzxc0HGRolbiHRNZO9N8oOxX79poRvwbI/D0eW94xXWGF9V9MoKhalDvxq/jQ/AU7YMg0qnaQhleBkxSJGvEC3QSxUpiG4JOtuxJIdFXGEuH2chwqY9YLK2XyBT7NFkz8qXBvB3FVb42H7d3SCE5FWURETnq4srJknblEwNKepQeKcRrN4cyrBRbMQrn3nzdU5L0XdaO+Cy9GbCV+vhJyMuUI0YYxnpPZz6/y7X5lqSzxzkXIwaxQAazhQFSKB5vEmR0BF3DZmYl62TDNY6hUtjvrfn0mWQEIXqG8iU7g0wU/XvpqLfyO4+y3604d50gEx3G0y5wpVG7iyllsos6iLKX4spomo1qQGoEkE/Sp8EeNGP3y/iBg3uBEq54CYG5wR9QYUWqOhuh9lziJRhUpq+t1P0FOfkM8cSXGvdr9tCjStrDeac2syLKindVZy1Juc5grdJi5q686SCT7Ts46wRR4YWDxurjzDWyIvMpnRI7OXuEziPgLmeT7jRPNP3TKWcGQNuDFQ1SlPDBgaGIRO85AGpTwImXiRQMlO95emhvCVwvG+3rAvXuRpPkrJvx2XL8trDIPXqGcXkXohw/2n7jbZ4HjCUNNgZZxkyokgVbp5UL1M861KhWjIrylis4ReTt+t66Ab8kB9vSNESM=
+        distributions: "sdist bdist_wheel"
+        skip_existing: true
+    - stage: deploy_conda
+      python: "3.6"
+      addons:
+        apt:
+          update: true
+      install:
+        - pip install rst2txt yolk3k
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - chmod +x .ci/travis_deploy_conda.sh
+      script: skip
+      deploy:
+        on:
+          repo: domdfcoding/PyMassSpec
+        provider: script
+        script: .ci/travis_deploy_conda.sh || travis_terminate 1;
+
+    - stage: deploy_releases
+      python: "3.6"
+      install:
+        - pip install PyGithub requests
+      script: skip
+      deploy:
+        on:
+          repo: domdfcoding/PyMassSpec
+        provider: script
+        script: python .ci/copy_pypi_2_github.py || travis_terminate 1;

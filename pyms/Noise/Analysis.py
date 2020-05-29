@@ -60,34 +60,34 @@ def window_analyzer(ic, window=_DEFAULT_WINDOW, n_windows=_DEFAULT_N_WINDOWS, ra
 
 	:author: Vladimir Likic
 	"""
-	
+
 	if not isinstance(ic, IonChromatogram):
 		raise TypeError("'ic' must be an IonChromatogram object")
 	if not isinstance(window, (int, str)):
 		raise TypeError("'window' must be a int or string")
 	if not isinstance(n_windows, int):
 		raise TypeError("'n_windows' must be an integer")
-	
+
 	ia = ic.intensity_array  # fetch the intensitiess
-	
+
 	# create an instance of the Random class
 	if rand_seed:
 		generator = random.Random(rand_seed)
 	else:
 		generator = random.Random()
-	
+
 	window_pts = window_sele_points(ic, window)
-	
+
 	maxi = ia.size - window_pts
-	noise_level = math.fabs(ia.max()-ia.min())
+	noise_level = math.fabs(ia.max() - ia.min())
 	# best_window_pos = None
 	seen_positions = []
-	
+
 	cntr = 0
-	
+
 	while cntr < n_windows:
 		# generator.randrange(): last point not included in range
-		try_pos = generator.randrange(0, maxi+1)
+		try_pos = generator.randrange(0, maxi + 1)
 		# only process the window if not analyzed previously
 		if try_pos not in seen_positions:
 			end_slice = try_pos + window_pts
@@ -97,5 +97,5 @@ def window_analyzer(ic, window=_DEFAULT_WINDOW, n_windows=_DEFAULT_N_WINDOWS, ra
 				# best_window_pos = try_pos
 		cntr = cntr + 1
 		seen_positions.append(try_pos)
-	
+
 	return noise_level

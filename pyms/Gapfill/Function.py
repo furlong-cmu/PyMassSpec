@@ -31,12 +31,14 @@ import pathlib
 import numpy
 
 # this package
+from pyms.Utils.Utils import is_path
 from pyms.BillerBiemann import get_maxima_list_reduced
 from pyms.Gapfill.Class import MissingPeak, Sample
 from pyms.IntensityMatrix import build_intensity_matrix_i
 from pyms.Noise.SavitzkyGolay import savitzky_golay
 from pyms.Peak.Function import ion_area
 from pyms.TopHat import tophat
+from pyms.Utils.IO import prepare_filepath
 
 MZML = 1
 NETCDF = 2
@@ -46,24 +48,23 @@ NETCDF = 2
 def file2matrix(file_name):
 	"""
 	Convert a .csv file to a numpy array
-	
+
 	:param file_name: Filename (.csv) to convert (area.csv, area_ci.csv)
 	:type file_name: str or pathlib.Path
-	
+
 	:return: Data matrix
 	:rtype: :class:`numpy.array`
-	
+
 	:author: Jairus Bowne
 	:author: Sean O'Callaghan
 	:author: Dominic Davis-Foster (pathlib support)
 	"""
-	
-	if not isinstance(file_name, (str, pathlib.Path)):
-		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
-	if not isinstance(file_name, pathlib.Path):
-		file_name = pathlib.Path(file_name)
-	
+
+	if not is_path(file_name):
+		raise TypeError("'file_name' must be a string or a PathLike object")
+
+	file_name = prepare_filepath(file_name, mkdirs=False)
+
 	with file_name.open() as fp:
 		reader = csv.reader(fp, delimiter=",", quotechar='"')
 		matrix = []
@@ -76,7 +77,7 @@ def file2matrix(file_name):
 					pass
 				newrow.append(each)
 			matrix.append(newrow)
-	
+
 	return numpy.array(matrix)
 
 
@@ -105,17 +106,17 @@ def missing_peak_finder(sample, file_name, points=3, null_ions=None,
 
 	:author: Sean O'Callaghan
 	"""
-	
+
 	if not null_ions:
 		null_ions = [73, 147]
 	if not crop_ions:
 		crop_ions = [50, 540]
-	
+
 	# TODO: some error checks on null and crop ions
-	
+
 	# TODO: a for root,files,dirs in os.path.walk(): loop
 	print("Sample:", sample.get_name(), "File:", file_name)
-	
+
 	if filetype.lower() == 'cdf':
 		from pyms.GCMS.IO.ANDI import ANDI_reader
 		data = ANDI_reader(file_name)
@@ -124,18 +125,18 @@ def missing_peak_finder(sample, file_name, points=3, null_ions=None,
 		data = mzML_reader(file_name)
 	else:
 		print("file type not valid")
-	
+
 	# build integer intensity matrix
 	im = build_intensity_matrix_i(data)
-	
+
 	for null_ion in null_ions:
 		im.null_mass(null_ion)
-	
+
 	im.crop_mass(crop_ions[0], crop_ions[1])
-	
+
 	# get the size of the intensity matrix
 	n_scan, n_mz = im.size
-	
+
 	# smooth data
 	for ii in range(n_mz):
 		ic = im.get_ic_at_index(ii)
@@ -143,16 +144,16 @@ def missing_peak_finder(sample, file_name, points=3, null_ions=None,
 		ic_smooth = savitzky_golay(ic1, points)
 		ic_base = tophat(ic_smooth, struct="1.5m")
 		im.set_ic_at_index(ii, ic_base)
-	
+
 	for mp in sample.get_missing_peaks():
-		
+
 		mp_rt = mp.rt
 		common_ion = mp.get_ci()
 		qual_ion_1 = float(mp.get_qual_ion1())
 		qual_ion_2 = float(mp.get_qual_ion2())
-		
+
 		ci_ion_chrom = im.get_ic_at_mass(common_ion)
-		print("ci = ",common_ion)
+		print("ci = ", common_ion)
 		qi1_ion_chrom = im.get_ic_at_mass(qual_ion_1)
 		print("qi1 = ", qual_ion_1)
 		qi2_ion_chrom = im.get_ic_at_mass(qual_ion_2)
@@ -160,46 +161,46 @@ def missing_peak_finder(sample, file_name, points=3, null_ions=None,
 		######
 		# Integrate the CI around that particular RT
 		#######
-		
+
 		# Convert time to points
 		# How long between scans?
-		
+
 		points_1 = ci_ion_chrom.get_index_at_time(float(mp_rt))
-		points_2 = ci_ion_chrom.get_index_at_time(float(mp_rt)-rt_window)
+		points_2 = ci_ion_chrom.get_index_at_time(float(mp_rt) - rt_window)
 		print("rt_window = ", points_1 - points_2)
-		
+
 		rt_window_points = points_1 - points_2
-		
+
 		maxima_list = get_maxima_list_reduced(
 			ci_ion_chrom, mp_rt, rt_window_points
 		)
-		
+
 		large_peaks = []
-		
+
 		for rt, intens in maxima_list:
 			if intens > threshold:
 				q1_index = qi1_ion_chrom.get_index_at_time(rt)
 				q2_index = qi2_ion_chrom.get_index_at_time(rt)
-				
+
 				q1_intensity = qi1_ion_chrom.get_intensity_at_index(q1_index)
 				q2_intensity = qi2_ion_chrom.get_intensity_at_index(q2_index)
-				
-				if q1_intensity > threshold/2 and q2_intensity > threshold/2:
+
+				if q1_intensity > threshold / 2 and q2_intensity > threshold / 2:
 					large_peaks.append([rt, intens])
-		
+
 		print(f'found {len(large_peaks):d} peaks above threshold')
-		
+
 		areas = []
 		for peak in large_peaks:
 			apex = ci_ion_chrom.get_index_at_time(peak[0])
 			ia = ci_ion_chrom.get_intensity_array().tolist()
 			area, left, right, l_share, r_share = ion_area(ia, apex, 0)
 			areas.append(area)
-		
+
 		########################
-		
+
 		areas.sort()
-		if len(areas)>0:
+		if len(areas) > 0:
 			biggest_area = areas[-1]
 			mp.set_ci_area(biggest_area)
 			mp.set_exact_rt(f"{float(mp_rt) / 60.0:.3f}")
@@ -219,41 +220,41 @@ def mp_finder(input_matrix):
 
 	:return: list of Samples
 	:rtype: :class:`list` of :class:`pyms.Gapfill.Class.Sample` objects
-	
+
 	:author: Jairus Bowne
 	:author: Sean O'Callaghan
 	"""
-	
+
 	sample_list = []
-	
+
 	try:
 		ci_pos = input_matrix[0].index(' "Quant Ion"')
 		print("found Quant Ion position:", ci_pos)
 	except ValueError:
 		ci_pos = input_matrix[0].index('"Quant Ion"')
-	
+
 	uid_pos = input_matrix[0].index('UID')
-	
+
 	# Set up the sample objects
 	# All entries on line 1 beyond the Qual Ion position are sample names
 	for i, sample_name in enumerate(input_matrix[0][ci_pos:]):
 		print(sample_name)
 		sample = Sample(sample_name, i + 3)  # add 4 to allow for UID, RT,QualIon
 		sample_list.append(sample)
-	
+
 	for line in input_matrix[1:]:
 		uid = line[uid_pos]
 		common_ion = line[ci_pos]
-		
+
 		qual_ion_1 = uid.split("-")[0]
 		qual_ion_2 = uid.split("-")[1]
 		rt = uid.split("-")[-1]
-		
+
 		for i, area in enumerate(line[ci_pos:]):
 			if area == 'NA':
 				missing_peak = MissingPeak(common_ion, qual_ion_1, qual_ion_2, rt)
 				sample_list[i].add_missing_peak(missing_peak)
-	
+
 	return sample_list
 
 
@@ -263,74 +264,74 @@ def transposed(lists):
 
 	:param lists: the list of lists to be transposed
 	:type lists: list
-	
+
 	:return: transposed list of lists
 	:rtype: :class:`list` of lists
-	
+
 	:author: Jairus Bowne
 	:author: Sean O'Callaghan
 	"""
-	
+
 	if not lists:
 		return []
-	
+
 	return map(lambda *row: list(row), *lists)
 
 
 def write_filled_csv(sample_list, area_file, filled_area_file):
 	"""
 	creates a new area_ci.csv file, replacing NAs with values from the sample_list objects where possible
-	
+
 	:param sample_list: A list of samples
 	:type sample_list: :class:`list` of :class:`pyms.Gapfill.Class.Sample` objects
 	:param area_file: the file 'area_ci.csv' from PyMassSpec output
 	:type area_file: str or pathlib.Path
 	:param filled_area_file: the new output file which has NA values replaced
 	:type filled_area_file: str or pathlib.Path
-	
+
 	:author: Jairus Bowne
 	:author: Sean O'Callaghan
 	:author: Dominic Davis-Foster (pathlib support)
 	"""
-		
+
 	if not isinstance(filled_area_file, (str, pathlib.Path)):
 		raise TypeError("'filled_area_file' must be a string or a pathlib.Path object")
-	
+
 	if not isinstance(filled_area_file, pathlib.Path):
 		filled_area_file = pathlib.Path(filled_area_file)
-	
+
 	if not filled_area_file.parent.is_dir():
 		filled_area_file.parent.mkdir(parents=True)
-	
+
 	old_matrix = file2matrix(area_file)
-	
+
 	# Invert it to be a little more efficient
 	invert_old_matrix = zip(*old_matrix)
 	# print invert_old_matrix[0:5]
-	
+
 	uid_list = invert_old_matrix[0][1:]
 	rt_list = []
 	for uid in uid_list:
 		rt = uid.split('-')[-1]
 		rt_list.append(rt)
-	
+
 	# print(rt_list)
-	
+
 	# start setting up the output file
 	invert_new_matrix = []
 	for line in invert_old_matrix[0:2]:
 		invert_new_matrix.append(line)
-	
+
 	for line in invert_old_matrix[3:]:
 		sample_name = line[0]
-		
+
 		new_line = []
 		new_line.append(sample_name)
 		for sample in sample_list:
 			if sample_name in sample.get_name():
 				rt_area_dict = sample.get_mp_rt_area_dict()
 				# print rt_area_dict
-		
+
 		for i, part in enumerate(line[1:]):
 			# print part
 			if part == 'NA':
@@ -341,72 +342,72 @@ def write_filled_csv(sample_list, area_file, filled_area_file):
 					pass
 			else:
 				new_line.append(part)
-		
+
 		invert_new_matrix.append(new_line)
-	
+
 	fp_new = filled_area_file.open('w')
-	
+
 	#    new_matrix = numpy.empty(matrix_size)
 	new_matrix = transposed(invert_new_matrix)
-	
+
 	for i, line in enumerate(new_matrix):
 		for j, part in enumerate(line):
 			fp_new.write(f"{part},")
 		fp_new.write("\n")
-	
+
 	fp_new.close()
 
 
 def write_filled_rt_csv(sample_list, rt_file, filled_rt_file):
 	"""
 	creates a new rt.csv file, replacing NAs with values from the sample_list objects where possible
-	
+
 	:param sample_list: A list of samples
 	:type sample_list: :class:`list` of :class:`pyms.Gapfill.Class.Sample` objects
 	:param rt_file: the file 'rt.csv' from PyMassSpec output
 	:type rt_file: str or pathlib.Path
 	:param filled_rt_file: the new output file which has NA values replaced
 	:type filled_rt_file: str or pathlib.Path
-	
+
 	:author: Jairus Bowne
 	:author: Sean O'Callaghan
 	:author: Dominic Davis-Foster (pathlib support)
 	"""
-	
+
 	if not isinstance(filled_rt_file, (str, pathlib.Path)):
 		raise TypeError("'filled_rt_file' must be a string or a pathlib.Path object")
-	
+
 	if not isinstance(filled_rt_file, pathlib.Path):
 		filled_rt_file = pathlib.Path(filled_rt_file)
-	
+
 	if not filled_rt_file.parent.is_dir():
 		filled_rt_file.parent.mkdir(parents=True)
-	
+
 	old_matrix = file2matrix(rt_file)
-	
+
 	# Invert it to be a little more efficent
 	invert_old_matrix = zip(*old_matrix)
-	
+
 	uid_list = invert_old_matrix[0][1:]
 	rt_list = []
 	for uid in uid_list:
 		rt = uid.split('-')[-1]
 		rt_list.append(rt)
-	
+
 	# start setting up the output file
 	invert_new_matrix = []
 	for line in invert_old_matrix[0:1]:
 		invert_new_matrix.append(line)
-	
+
 	for line in invert_old_matrix[2:]:
 		sample_name = line[0]
-		
+
 		new_line = [sample_name]
 		for sample in sample_list:
 			if sample_name in sample.get_name():
-				
+
 				rt_exact_rt_dict = sample.get_mp_rt_exact_rt_dict()
-		
+
 		for i, part in enumerate(line[1:]):
 			if part == 'NA':
 				try:
@@ -417,18 +418,17 @@ def write_filled_rt_csv(sample_list, rt_file, filled_rt_file):
 
 			else:
 				new_line.append(part)
-		
+
 		invert_new_matrix.append(new_line)
-	
+
 	fp_new = open(filled_rt_file, 'w')
-	
+
 	# new_matrix = numpy.empty(matrix_size)
 	new_matrix = transposed(invert_new_matrix)
-	
+
 	for i, line in enumerate(new_matrix):
 		for j, part in enumerate(line):
 			fp_new.write(f"{str(part),}")
 		fp_new.write("\n")
-	
-	fp_new.close()
 
+	fp_new.close()

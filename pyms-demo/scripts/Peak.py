@@ -91,20 +91,22 @@ peak = Peak(31.17, ms, minutes=True)
 # units as given when the Peak object was created). The format is:
 # 
 
-Mass1-Mass2-Ratio-RT
+# 
+# Mass1-Mass2-Ratio-RT
+# 
 
 # For example:
 
 # In[6]:
 
 
-peak.rt
+print(peak.rt)
 
 
 # In[7]:
 
 
-peak.UID
+print(peak.UID)
 
 
 # In[8]:
@@ -112,7 +114,7 @@ peak.UID
 
 index = im.get_index_of_mass(73.3)
 
-index
+print(index)
 
 
 # ## Modifying a Peak Object
@@ -136,7 +138,7 @@ peak.null_mass(147)
 # In[10]:
 
 
-peak.UID
+print(peak.UID)
 
 
 # It is also possible to change the peak mass spectrum by setting the attribute |pyms.Peak.Class.Peak.mass_spectrum|.

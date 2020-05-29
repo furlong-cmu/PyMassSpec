@@ -16,4 +16,3 @@ tic1 = savitzky_golay(tic)
 
 tic.write("output/tic.dat",minutes=True)
 tic1.write("output/tic1.dat",minutes=True)
-

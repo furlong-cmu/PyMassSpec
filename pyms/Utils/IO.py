@@ -27,32 +27,36 @@ General I/O functions
 import gzip
 import pathlib
 import pickle
+from numbers import Number
 
-# 3rd party
-import numpy
-
-_list_types = (list, tuple, numpy.core.ndarray)
+# this package
+from pyms.Utils.Utils import _list_types
 
 
-def prepare_filepath(file_name):
+def prepare_filepath(file_name, mkdirs=True):
 	"""
 	Convert string filename into pathlib.Path object and create parent directories if required
-		
+
 	:param file_name: file_name to process
 	:type file_name: str or pathlib.Path
-	
+	:param mkdirs: Whether the parent directory of the file should be created if it doesn't exist. Default True.
+	:type mkdirs: bool, optional
+
 	:return: file_name
 	:rtype: pathlib.Path
-	
+
 	:author: Dominic Davis-Foster
 	"""
-	
+
 	if not isinstance(file_name, pathlib.Path):
-		file_name = pathlib.Path(file_name)
-	
-	if not file_name.parent.is_dir():
+		try:
+			file_name = pathlib.Path(file_name)
+		except TypeError:
+			raise TypeError(f"'file_name' must be a string or a PathLike object, not {type(file_name)}")
+
+	if not file_name.parent.is_dir() and mkdirs:
 		file_name.parent.mkdir(parents=True)
-	
+
 	return file_name
 
 
@@ -64,16 +68,17 @@ def dump_object(obj, file_name):
 	:type obj: any
 	:param file_name: Name of the file for the object dump
 	:type file_name: str or pathlib.Path
-	
+
 	:author: Vladimir Likic
 	:author: Dominic Davis-Foster (pathlib support)
 	"""
-	
-	if not isinstance(file_name, (str, pathlib.Path)):
-		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
+	from pyms.Utils.Utils import is_path
+
+	if not is_path(file_name):
+		raise TypeError("'file_name' must be a string or a PathLike object")
+
 	file_name = prepare_filepath(file_name)
-	
+
 	with file_name.open('wb') as fp:
 		pickle.dump(obj, fp)
 
@@ -87,16 +92,17 @@ def load_object(file_name):
 
 	:return: Object contained in the file 'file_name'
 	:rtype: An instance of an arbitrary class
-	
+
 	:author: Vladimir Likic
 	:author: Dominic Davis-Foster (pathlib support)
 	"""
-	
-	if not isinstance(file_name, (str, pathlib.Path)):
-		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
+	from pyms.Utils.Utils import is_path
+
+	if not is_path(file_name):
+		raise TypeError("'file_name' must be a string or a PathLike object")
+
 	file_name = prepare_filepath(file_name)
-	
+
 	with file_name.open('wb') as fp:
 		return pickle.load(fp)
 
@@ -118,23 +124,24 @@ def file_lines(file_name, strip=False):
 	:author: Vladimir Likic
 	:author: Dominic Davis-Foster (pathlib support)
 	"""
-	
-	if not isinstance(file_name, (str, pathlib.Path)):
-		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
-	if not isinstance(file_name, pathlib.Path):
-		file_name = pathlib.Path(file_name)
-	
+
+	from pyms.Utils.Utils import is_path
+
+	if not is_path(file_name):
+		raise TypeError("'file_name' must be a string or a PathLike object")
+
+	file_name = prepare_filepath(file_name, mkdirs=False)
+
 	with file_name.open() as fp:
 		lines = fp.readlines()
-	
+
 	if strip:
 		# strip leading and trailing whitespaces
 		lines_filtered = []
 		for line in lines:
 			line = line.strip()
 			lines_filtered.append(line)
-		
+
 		# discard comments
 		lines_to_discard = []
 		for line in lines_filtered:
@@ -144,7 +151,7 @@ def file_lines(file_name, strip=False):
 		for line in lines_to_discard:
 			lines_filtered.remove(line)
 		lines = lines_filtered
-	
+
 	return lines
 
 
@@ -168,27 +175,29 @@ def save_data(file_name, data, format_str="%.6f", prepend="", sep=" ", compresse
 	:author: Vladimir Likic
 	:author: Dominic Davis-Foster (pathlib support)
 	"""
-	
-	if not isinstance(file_name, (str, pathlib.Path)):
-		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
+
+	from pyms.Utils.Utils import is_path
+
+	if not is_path(file_name):
+		raise TypeError("'file_name' must be a string or a PathLike object")
+
 	file_name = prepare_filepath(file_name)
-	
+
 	if not isinstance(data, _list_types):
 		raise TypeError("'data' must be a list")
-	
+
 	if not isinstance(prepend, str):
 		raise TypeError("'prepend' must be a string")
-	
+
 	if not isinstance(sep, str):
 		raise TypeError("'sep' must be a string")
-	
+
 	with file_name.open("w") as fp:
-		
+
 		# decide whether data is a vector or matrix
-		if isinstance(data[0], (int, float)):
+		if isinstance(data[0], Number):
 			for item in data:
-				if not isinstance(item, (int, float)):
+				if not isinstance(item, Number):
 					raise TypeError("not all elements of the list are numbers")
 			data_is_matrix = 0
 		else:
@@ -196,24 +205,24 @@ def save_data(file_name, data, format_str="%.6f", prepend="", sep=" ", compresse
 				if not isinstance(item, _list_types):
 					raise TypeError("not all elements of the list are lists")
 			data_is_matrix = 1
-		
+
 		if data_is_matrix:
-			for ii in range(len(data)):
+			for x_value in data:
 				fp.write(prepend)
-				for jj in range(len(data[ii])):
-					if isinstance(data[ii][jj], (int, float)):
-						fp.write(format_str % (data[ii][jj]))
-						if jj < (len(data[ii]) - 1):
+				for jj, y_value in enumerate(x_value):
+					if isinstance(y_value, Number):
+						fp.write(format_str % y_value)
+						if jj < (len(x_value) - 1):
 							fp.write(sep)
 					else:
 						raise TypeError("'datum' must be a number")
 				fp.write("\n")
 		else:
-			for ii in range(len(data)):
+			for x_value in data:
 				fp.write(prepend)
-				fp.write(format_str % (data[ii]))
+				fp.write(format_str % x_value)
 				fp.write("\n")
-	
+
 	if compressed:
 		with file_name.open() as f_in:
 			with gzip.open(str(file_name) + '.gz', 'wb') as f_out:

@@ -32,4 +32,3 @@ print(" -> end mass:", im.max_mass)
 index = im.get_index_of_mass(73.3)
 print(" -> the index of the nearest mass to 73.3 m/z is:", index)
 print(" -> the nearest mass to 73.3 m/z is:", im.get_mass_at_index(index))
-

@@ -2,35 +2,66 @@
 PyMassSpec
 ************
 
-.. image:: https://travis-ci.org/domdfcoding/pymassspec.svg?branch=master
-    :target: https://travis-ci.org/domdfcoding/pymassspec
-    :alt: Build Status
+.. start shields
+
+.. image:: https://img.shields.io/travis/com/domdfcoding/PyMassSpec/master?logo=travis
+    :target: https://travis-ci.com/domdfcoding/PyMassSpec
+    :alt: Travis Build Status
 .. image:: https://readthedocs.org/projects/pymassspec/badge/?version=latest
     :target: https://pymassspec.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
-.. image:: https://img.shields.io/pypi/v/pymassspec.svg
-    :target: https://pypi.org/project/pymassspec/
+.. image:: https://img.shields.io/pypi/v/PyMassSpec.svg
+    :target: https://pypi.org/project/PyMassSpec/
     :alt: PyPI
-.. image:: https://img.shields.io/pypi/pyversions/pymassspec.svg
-    :target: https://pypi.org/project/pymassspec/
+.. image:: https://img.shields.io/pypi/pyversions/PyMassSpec.svg
+    :target: https://pypi.org/project/PyMassSpec/
     :alt: PyPI - Python Version
+.. image:: https://img.shields.io/pypi/wheel/PyMassSpec
+    :target: https://pypi.org/project/PyMassSpec/
+    :alt: PyPI - Wheel
+.. image:: https://img.shields.io/pypi/implementation/PyMassSpec
+    :target: https://pypi.org/project/PyMassSpec/
+    :alt: PyPI - Implementation
+.. image:: https://img.shields.io/conda/v/domdfcoding/PyMassSpec
+    :alt: Conda
+    :target: https://anaconda.org/domdfcoding/PyMassSpec
+.. image:: https://img.shields.io/conda/pn/domdfcoding/PyMassSpec?label=conda%7Cplatform
+    :alt: Conda Platform
+    :target: https://anaconda.org/domdfcoding/PyMassSpec
 .. image:: https://coveralls.io/repos/github/domdfcoding/PyMassSpec/badge.svg?branch=master
     :target: https://coveralls.io/github/domdfcoding/PyMassSpec?branch=master
     :alt: Coverage
+.. image:: https://img.shields.io/badge/license-GPLv2-orange
+    :alt: License
+    :target: https://github.com/domdfcoding/PyMassSpec/blob/master/LICENSE
+.. image:: https://img.shields.io/github/languages/top/domdfcoding/PyMassSpec
+    :alt: GitHub top language
+.. image:: https://img.shields.io/github/commits-since/domdfcoding/PyMassSpec/v2.2.21
+    :target: https://github.com/domdfcoding/PyMassSpec/pulse
+    :alt: GitHub commits since tagged version
+.. image:: https://img.shields.io/github/last-commit/domdfcoding/PyMassSpec
+    :target: https://github.com/domdfcoding/PyMassSpec/commit/master
+    :alt: GitHub last commit
+.. image:: https://img.shields.io/maintenance/yes/2020
+    :alt: Maintenance
+.. image:: https://img.shields.io/codefactor/grade/github/domdfcoding/PyMassSpec
+    :target: https://www.codefactor.io/repository/github/domdfcoding/PyMassSpec
+    :alt: CodeFactor Grade
 
+.. end shields
 
 A Python toolkit for processing of chromatography--mass spectrometry data
 
 PyMassSpec is a Python_ package for processing gas chromatography-mass spectrometry data.
 PyMassSpec provides a framework and a set of components for rapid development and testing of methods for processing of chromatography--mass spectrometry data.
-PyMassSpec can be used interactively through the Python shell, or the functions can be collected into scripts when it is preferable to perform data processing in the batch mode.
+PyMassSpec can be used interactively through the Python shell, in a `Jupyter Notebook <https://jupyter.org/>`_, or the functions can be collected into scripts when it is preferable to perform data processing in the batch mode.
 
 |
 
 Forked from the original PyMS Repository: https://github.com/ma-bio21/pyms.
 Originally by Andrew Isaac, Sean O'Callaghan and Vladimir Likić. The original publication can be found here: https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-13-115
 
-The original project seems to have been abandoned as there has been no activity in 2 years.
+The original project seems to have been abandoned as there has been no activity since 2017.
 
 |
 

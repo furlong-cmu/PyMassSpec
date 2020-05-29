@@ -23,6 +23,69 @@ General utility functions
 #                                                                              #
 ################################################################################
 
+# stdlib
+import os
+import pathlib
+from collections import Sequence
+from decimal import Decimal
+
+# 3rd party
+import numpy
+
+_list_types = (Sequence, numpy.core.ndarray)
+_path_types = (str, os.PathLike, pathlib.Path)
+
+
+def is_path(obj):
+    """
+    Returns whether the object represents a filesystem path
+
+    :param obj:
+    :type obj:
+
+    :return:
+    :rtype:
+    """
+
+    if isinstance(obj, _path_types):
+        return True
+    else:
+        return hasattr(obj, " __fspath__")
+
+
+def is_sequence(obj):
+    """
+    Returns whether the object is a Sequence and not a string
+
+    :param obj:
+    :type obj:
+
+    :return:
+    :rtype: bool
+    """
+
+    return isinstance(obj, _list_types) and not isinstance(obj, str)
+
+
+def is_sequence_of(obj, of):
+    """
+    Returns whether the object is a Sequence and not a string of the given type
+
+    :param obj:
+    :type obj: any
+    :param of:
+    :type of: any
+
+    :return:
+    :rtype: bool
+    """
+
+    return (
+            isinstance(obj, _list_types)
+            and not isinstance(obj, str)
+            and all(isinstance(x, of) for x in obj)
+            )
+
 
 def is_positive_int(arg):
     """
@@ -58,13 +121,4 @@ def is_list_of_dec_nums(arg):
     :author: Milica Ng
     """
 
-    if not(isinstance(arg, list)):
-        return False
-    elif not arg:
-        return False
-    else:
-        for q in arg:
-            if not(isinstance(q, list)):
-                return False
-    return True
-
+    return is_sequence_of(arg, (float, Decimal))

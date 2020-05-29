@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 rm -rf docs
-cd UserGuide
+cd doc-source
 rm -rf build
 make html
 cp -r build/html ../docs/

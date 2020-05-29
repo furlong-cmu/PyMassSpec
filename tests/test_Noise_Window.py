@@ -39,15 +39,15 @@ def test_window_smooth(tic):
 	# the window is 5 points
 	tic1 = window_smooth(tic, window=5)
 	assert isinstance(tic1, IonChromatogram)
-	
+
 	tic2 = window_smooth(tic, window=5, use_median=True)
 	assert isinstance(tic2, IonChromatogram)
-	
+
 	# an example of how to specify window as a time string
 	# (7 seconds in this case)
 	tic3 = window_smooth(tic, window='7s')
 	assert isinstance(tic3, IonChromatogram)
-	
+
 	for obj in [*test_numbers, test_string, *test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			window_smooth(obj)
@@ -60,18 +60,18 @@ def test_window_smooth(tic):
 
 
 def test_window_smooth_im(im):
-	
+
 	window_smooth_im(im)
 	window_smooth_im(im, window=5)
-	
+
 	# Use window averaging to smooth all IC's in the IM
 	im_smooth = window_smooth_im(im, window=5, use_median=False)
 	assert isinstance(im_smooth, IntensityMatrix)
-	
+
 	# find the IC for derivatisation product ion before smoothing
 	ic = im.get_ic_at_index(73)
 	assert isinstance(ic, IonChromatogram)
-	
+
 	# find the IC for derivatisation product ion after smoothing
 	ic_smooth = im_smooth.get_ic_at_index(73)
 	assert isinstance(ic_smooth, IonChromatogram)
@@ -91,27 +91,27 @@ def test_smooth_im(data):
 	# Build intensity matrix with defaults, float masses with interval
 	# (bin size) of one from min mass
 	im = build_intensity_matrix_i(data)
-	
+
 	im.min_mass
 	n_scan, n_mz = im.size
-	
+
 	# process data
 	for ii in range(n_mz):
 		# print("Working on IC#", ii + 1)
 		ic = im.get_ic_at_index(ii)
 		assert isinstance(ic, IonChromatogram)
-		
+
 		# if ((ii+off) in [319, 205, 160, 217]):
 		# 	ic.write("output/ic-raw-%d.dat" % (ii+off))
-		
+
 		ic_smooth = savitzky_golay(ic)
 		assert isinstance(ic_smooth, IonChromatogram)
-		
+
 		ic_bc = tophat(ic_smooth, struct="1.5m")
 		assert isinstance(ic_bc, IonChromatogram)
-		
+
 		# if ((ii+off) in [319, 205, 160, 217]):
 		# 	ic_bc.write("output/ic-flt-%d.dat" % (ii+off))
-		
+
 		im.set_ic_at_index(ii, ic_bc)
 		assert im.get_ic_at_index(ii) == ic_bc

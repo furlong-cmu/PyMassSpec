@@ -18,10 +18,6 @@
 #                                                                           #
 #############################################################################
 
-
-import pytest
-
-
 # TODO: 70 - 71, A1, A2,
 
 # TODO: Display, Gapfill
@@ -33,14 +29,12 @@ import pytest
 # diff
 
 
-
 # TODO: sum_maxima, get_maxima_indices, get_maxima_list, get_maxima_list_reduced
 # TODO: tophat with struct=None
 
 # Test permutations:
-#	with and without psyco
-#	with and without mpi4py
-#	with pycluster
+# 	with and without mpi4py
+# 	with pycluster
 #   with biopython
 #   neither pycluster or biopython
 

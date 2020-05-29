@@ -52,7 +52,7 @@ for ii in range(n_mz):
 
 from pyms.BillerBiemann import BillerBiemann
 peak_list = BillerBiemann(im)
-peak_list[:10]
+print(peak_list[:10])
 
 
 # In[20]:
@@ -75,7 +75,7 @@ len(peak_list)
 
 
 peak_list = BillerBiemann(im, points=9, scans=2)
-peak_list[:10]
+print(peak_list[:10])
 
 
 # In[22]:
@@ -105,14 +105,14 @@ len(peak_list)
 
 from pyms.BillerBiemann import rel_threshold, num_ions_threshold
 pl = rel_threshold(peak_list, percent=2)
-pl[:10]
+print(pl[:10])
 
 
 # In[24]:
 
 
 new_peak_list = num_ions_threshold(pl, n=3, cutoff=10000)
-new_peak_list[:10]
+print(new_peak_list[:10])
 
 
 # In[25]:

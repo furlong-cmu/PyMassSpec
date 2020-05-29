@@ -71,13 +71,13 @@ data.info()
 
 
 im.crop_mass(60, 400)
-im.min_mass
+print(im.min_mass)
 
 
 # In[31]:
 
 
-im.max_mass
+print(im.max_mass)
 
 
 # It is also possible to set all intensities for a given mass to zero. This is

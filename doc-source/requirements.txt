@@ -1,0 +1,11 @@
+Pillow >=6.0.0
+autodocsumm
+extras_require
+jupyter
+nbconvert
+nbsphinx
+pypandoc
+sphinx
+sphinx_rtd_theme
+sphinxcontrib-httpdomain
+sphinxemoji

@@ -4,8 +4,6 @@
 
 # This file has been replaced by jupyter/Displaying_Detected_Peaks.ipynb
 
-from numpy import *
-
 from pyms.GCMS.IO.ANDI import ANDI_reader
 from pyms.IntensityMatrix import build_intensity_matrix_i
 from pyms.Noise.SavitzkyGolay import savitzky_golay

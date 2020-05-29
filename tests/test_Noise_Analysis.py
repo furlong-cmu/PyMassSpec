@@ -31,16 +31,16 @@ from .constants import *
 def test_window_anlyzer(tic):
 	noise_estimate = window_analyzer(tic, rand_seed=test_int)
 	assert noise_estimate == 22524.833209785025
-	
+
 	assert isinstance(noise_estimate, float)
 	assert isinstance(window_analyzer(tic), float)
 	assert isinstance(window_analyzer(tic, rand_seed=test_string), float)
 	assert isinstance(window_analyzer(tic, rand_seed=test_float), float)
-	
+
 	for obj in [test_string, *test_numbers, *test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			window_analyzer(obj)
-	
+
 	for obj in [*test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			window_analyzer(tic, rand_seed=obj)

@@ -78,23 +78,23 @@ def im_i(data):
 @pytest.fixture(scope="function")
 def peak_list(im_i):
 	im_i = deepcopy(im_i)
-	
+
 	# Intensity matrix size (scans, masses)
 	n_scan, n_mz = im_i.size
-	
+
 	# noise filter and baseline correct
 	for ii in range(n_mz):
 		ic = im_i.get_ic_at_index(ii)
 		ic_smooth = savitzky_golay(ic)
 		ic_bc = tophat(ic_smooth, struct="1.5m")
 		im_i.set_ic_at_index(ii, ic_bc)
-	
+
 	# Use Biller and Biemann technique to find apexing ions at a scan
 	# default is maxima over three scans and not to combine with any neighbouring
 	# scan.
 	peak_list = BillerBiemann(im_i, points=9, scans=2)
 	return peak_list
-	
+
 
 @pytest.fixture(scope="function")
 def filtered_peak_list(im_i, peak_list):
@@ -102,22 +102,22 @@ def filtered_peak_list(im_i, peak_list):
 	# do peak detection on pre-trimmed data
 	# trim by relative intensity
 	apl = rel_threshold(peak_list, 2, copy_peaks=False)
-	
+
 	# trim by threshold
 	new_peak_list = num_ions_threshold(apl, 3, 3000, copy_peaks=False)
-	
+
 	# ignore TMS ions and set mass range
 	for peak in new_peak_list:
 		peak.crop_mass(50, 400)
 		peak.null_mass(73)
 		peak.null_mass(147)
-	
+
 		# find area
 		area = peak_sum_area(im_i, peak)
 		peak.area = area
 		area_dict = peak_top_ion_areas(im_i, peak)
 		peak.ion_areas = area_dict
-	
+
 	return new_peak_list
 
 
@@ -137,8 +137,8 @@ def ms(im_i):
 def scan(data):
 	# return deepcopy(im_i.get_scan_at_index(0))
 	return deepcopy(data.scan_list[0])
-	
-	
+
+
 @pytest.fixture(scope="function")
 def expr(filtered_peak_list):
 	# create an experiment
@@ -147,7 +147,7 @@ def expr(filtered_peak_list):
 
 # Teardown Function
 def pytest_sessionfinish(session, exitstatus):
-	# try:
-	# 	shutil.rmtree(Path(os.path.split(__file__)[0]) / "output")
-	# except FileNotFoundError:
+	try:
+		shutil.rmtree(Path(os.path.split(__file__)[0]) / "output")
+	except FileNotFoundError:
 		pass

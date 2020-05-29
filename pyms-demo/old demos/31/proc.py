@@ -3,12 +3,14 @@
 # This file has been replaced by jupyter/IntensityMatrix.ipynb
 
 import pathlib
+
 data_directory = pathlib.Path(".").resolve().parent.parent / "pyms-data"
 # Change this if the data files are stored in a different location
 
 from pyms.GCMS.IO.JCAMP import JCAMP_reader
 from pyms.IntensityMatrix import build_intensity_matrix
-#from pyms.Utils.IO import save_data
+
+# from pyms.Utils.IO import save_data
 
 # read the raw data
 jcamp_file = data_directory / "gc01_0812_066.jdx"
@@ -55,10 +57,8 @@ print("'ic' is a TIC:", ic0.is_tic())
 print("'ic' is a TIC:", ic73.is_tic())
 
 # save TIC to a file
-tic.write("output/tic.dat",minutes=True)
+tic.write("output/tic.dat", minutes=True)
 
 # save IC to a file
-ic0.write("output/ic_index_0.dat",minutes=True)
-ic73.write("output/ic_mass_73.dat",minutes=True)
-
-
+ic0.write("output/ic_index_0.dat", minutes=True)
+ic73.write("output/ic_mass_73.dat", minutes=True)

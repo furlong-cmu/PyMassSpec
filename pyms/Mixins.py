@@ -25,6 +25,7 @@ Mixins for pyms Classes
 
 # stdlib
 import math
+from numbers import Number
 from warnings import warn
 
 # 3rd party
@@ -50,9 +51,9 @@ class MaxMinMassMixin:
 		:author: Andrew Isaac
 		:author: Vladimir Likic
 		"""
-		
+
 		return self.max_mass
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use 'min_mass' attribute instead")
@@ -67,9 +68,9 @@ class MaxMinMassMixin:
 		:author: Andrew Isaac
 		:author: Vladimir Likic
 		"""
-		
+
 		return self.min_mass
-	
+
 	@property
 	def min_mass(self):
 		"""
@@ -80,9 +81,9 @@ class MaxMinMassMixin:
 
 		:author: Andrew Isaac
 		"""
-		
+
 		return self._min_mass
-	
+
 	@property
 	def max_mass(self):
 		"""
@@ -93,12 +94,12 @@ class MaxMinMassMixin:
 
 		:author: Andrew Isaac
 		"""
-		
+
 		return self._max_mass
 
 
 class MassListMixin(MaxMinMassMixin):
-	
+
 	@property
 	def mass_list(self):
 		"""
@@ -111,9 +112,9 @@ class MassListMixin(MaxMinMassMixin):
 		:author: Andrew Isaac
 		:author: Vladimir Likic
 		"""
-		
+
 		return self._mass_list[:]
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use 'mass_list' attribute instead")
@@ -128,12 +129,12 @@ class MassListMixin(MaxMinMassMixin):
 		:author: Andrew Isaac
 		:author: Vladimir Likic
 		"""
-		
+
 		return self.mass_list
 
 
 class TimeListMixin:
-	
+
 	@property
 	def time_list(self):
 		"""
@@ -146,9 +147,9 @@ class TimeListMixin:
 		:author: Lewis Lee
 		:author: Vladimir Likic
 		"""
-		
+
 		return self._time_list[:]
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use 'time_list' attribute instead")
@@ -161,12 +162,12 @@ class TimeListMixin:
 
 		:author: Andrew Isaac
 		"""
-		
+
 		return self.time_list
 
 
 class IntensityArrayMixin:
-	
+
 	@property
 	def intensity_array(self):
 		"""
@@ -178,9 +179,9 @@ class IntensityArrayMixin:
 		:author: Andrew Isaac
 		:author: Lewis Lee
 		"""
-		
+
 		return numpy.copy(self._intensity_array)
-	
+
 	@property
 	def intensity_matrix(self):
 		"""
@@ -191,11 +192,11 @@ class IntensityArrayMixin:
 
 		:author: Andrew Isaac
 		"""
-		
+
 		warn(f"Use 'intensity_array' attribute instead", DeprecationWarning)
-		
+
 		return numpy.copy(self._intensity_array)
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use 'intensity_array' attribute instead")
@@ -209,9 +210,9 @@ class IntensityArrayMixin:
 		:author: Lewis Lee
 		:author: Vladimir Likic
 		"""
-		
+
 		return self.intensity_array
-	
+
 	@property
 	def intensity_array_list(self):
 		"""
@@ -222,9 +223,9 @@ class IntensityArrayMixin:
 
 		:author: Andrew Isaac
 		"""
-		
+
 		return self._intensity_array.tolist()
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details=f"Use 'matrix_list' attribute instead")
@@ -237,9 +238,9 @@ class IntensityArrayMixin:
 
 		:author: Andrew Isaac
 		"""
-		
+
 		return self.intensity_array
-	
+
 	@property
 	def matrix_list(self):
 		"""
@@ -269,27 +270,27 @@ class GetIndexTimeMixin:
 		:author: Tim Erwin
 		:author: Vladimir Likic
 		"""
-		
-		if not isinstance(time, (int, float)):
+
+		if not isinstance(time, Number):
 			raise TypeError("'time' must be a number")
-		
+
 		if (time < self._min_rt) or (time > self._max_rt):
 			raise IndexError(f"time {time:.2f} is out of bounds (min: {self._min_rt:.2f}, max: {self._max_rt:.2f})")
-		
+
 		time_list = self._time_list
 		time_diff_min = self._max_rt
 		ix_match = None
-		
+
 		for ix in range(len(time_list)):
-			
+
 			time_diff = math.fabs(time - time_list[ix])
-			
+
 			if time_diff < time_diff_min:
 				ix_match = ix
 				time_diff_min = time_diff
-		
+
 		return ix_match
-	
+
 	def get_time_at_index(self, ix):
 		"""
 		Returns time at given index
@@ -303,11 +304,11 @@ class GetIndexTimeMixin:
 		:author: Lewis Lee
 		:author: Vladimir Likic
 		"""
-		
+
 		if not isinstance(ix, int):
 			raise TypeError("'ix' must be an integer")
-		
+
 		if ix < 0 or ix > len(self._time_list) - 1:
 			raise IndexError("index out of bounds")
-		
+
 		return self._time_list[ix]

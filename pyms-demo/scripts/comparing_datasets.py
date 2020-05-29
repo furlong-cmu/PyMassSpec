@@ -32,7 +32,7 @@ from pyms.GCMS.IO.ANDI import ANDI_reader
 
 andi_file = data_directory / "gc01_0812_066.cdf"
 data1 = ANDI_reader(andi_file)
-data1
+print(data1)
 
 
 # In[12]:
@@ -40,7 +40,7 @@ data1
 
 jcamp_file = data_directory / "gc01_0812_066.jdx"
 data2 = JCAMP_reader(jcamp_file)
-data2
+print(data2)
 
 
 # To compare the two data sets, use the function |diff()|
@@ -68,4 +68,3 @@ data2.trim(begin=1000, end=2000)
 
 
 diff(data1, data2)
-

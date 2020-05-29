@@ -21,6 +21,7 @@
 # stdlib
 import copy
 import pickle
+from numbers import Number
 
 # 3rd party
 import numpy
@@ -39,15 +40,15 @@ def test_IonChromatogram(im, tic):
 	ic = im.get_ic_at_index(0)
 	assert isinstance(ic, IonChromatogram)
 	assert not ic.is_tic()
-	
+
 	# get the ion chromatogram for m/z = 73
 	ic = im.get_ic_at_mass(73)
 	assert isinstance(ic, IonChromatogram)
 	assert not ic.is_tic()
-	
+
 	assert isinstance(tic, IonChromatogram)
 	assert tic.is_tic()
-	
+
 	# Errors
 	for obj in [test_string, *test_numbers, *test_sequences, test_dict]:
 		with pytest.raises(TypeError):
@@ -58,7 +59,7 @@ def test_IonChromatogram(im, tic):
 	for obj in [test_string, *test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			IonChromatogram(tic.intensity_array, tic.time_list, mass=obj)
-	
+
 	with pytest.raises(ValueError):
 		IonChromatogram(tic.intensity_array, test_list_ints)
 
@@ -70,9 +71,9 @@ def test_len(tic):
 def test_subtract_ic(im):
 	ic1 = im.get_ic_at_index(0)
 	assert isinstance(ic1, IonChromatogram)
-	
+
 	ic2 = im.get_ic_at_index(1)
-	
+
 	ic3 = ic1 - ic2
 	assert isinstance(ic3, IonChromatogram)
 
@@ -87,17 +88,17 @@ def test_equality(tic, im):
 	assert tic != test_list_strs
 	assert tic != test_dict
 	assert tic != test_tuple
-	
+
 
 def test_get_intensity_at_index(tic):
 	assert isinstance(tic.get_intensity_at_index(test_int), float)
 	assert tic.get_intensity_at_index(test_int) == 421170.0
-	
+
 	# Errors
 	for obj in [test_string, test_float, *test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			tic.get_intensity_at_index(obj)
-	
+
 	with pytest.raises(IndexError):
 		tic.get_intensity_at_index(-1)
 	with pytest.raises(IndexError):
@@ -120,18 +121,18 @@ def test_get_time_step(tic):
 def test_mass(tic, im):
 	with pytest.warns(Warning):
 		tic.mass
-	
+
 	ic = im.get_ic_at_index(0)
-	assert isinstance(ic.mass, (int, float))
+	assert isinstance(ic.mass, Number)
 	assert ic.mass == 50.2516
 
 
 def test_intensity_array(tic, im):
 	tic = copy.deepcopy(tic)
-	
+
 	assert isinstance(tic.intensity_array, numpy.ndarray)
 	assert all(numpy.equal(IonChromatogram(tic.intensity_array, tic.time_list).intensity_array, tic.intensity_array))
-	
+
 	ic = im.get_ic_at_index(0)
 	tic.intensity_array = ic.intensity_array
 	assert all(numpy.equal(tic.intensity_array, ic.intensity_array))
@@ -152,36 +153,36 @@ def test_set_intensity_array(tic):
 def test_time_step(tic):
 	assert isinstance(tic.time_step, float)
 	assert tic.time_step == 1.0560000035830972
-	
+
 
 def test_write(tic, outputdir):
-	tic.write(outputdir/"tic.dat",minutes=False, formatting=False)
-	
-	fp = (outputdir/"tic.dat").open()
-	
+	tic.write(outputdir / "tic.dat", minutes=False, formatting=False)
+
+	fp = (outputdir / "tic.dat").open()
+
 	for line, ii in zip(fp.readlines(), range(len(tic.time_list))):
 		assert line == "{} {}\n".format(tic.time_list[ii], tic.intensity_array[ii])
-		
+
 	fp.close()
-	
-	tic.write(outputdir/"tic_minutes.dat",minutes=True, formatting=False)
-	
-	fp = (outputdir/"tic_minutes.dat").open()
-	
+
+	tic.write(outputdir / "tic_minutes.dat", minutes=True, formatting=False)
+
+	fp = (outputdir / "tic_minutes.dat").open()
+
 	for line, ii in zip(fp.readlines(), range(len(tic.time_list))):
-		assert line == "{} {}\n".format(tic.time_list[ii]/60.0, tic.intensity_array[ii])
-		
+		assert line == "{} {}\n".format(tic.time_list[ii] / 60.0, tic.intensity_array[ii])
+
 	fp.close()
-	
-	tic.write(outputdir/"tic_formatting.dat", minutes=False)
-	
-	fp = (outputdir/"tic_formatting.dat").open()
-	
+
+	tic.write(outputdir / "tic_formatting.dat", minutes=False)
+
+	fp = (outputdir / "tic_formatting.dat").open()
+
 	for line, ii in zip(fp.readlines(), range(len(tic.time_list))):
 		assert line == f"{tic.time_list[ii]:8.4f} {tic.intensity_array[ii]:#.6e}\n"
-		
+
 	fp.close()
-	
+
 	for obj in [test_dict, *test_sequences, *test_numbers]:
 		with pytest.raises(TypeError):
 			tic.write(obj)
@@ -191,12 +192,12 @@ def test_write(tic, outputdir):
 
 def test_dump(im_i, outputdir):
 	im_i.dump(outputdir / "im_i_dump.dat")
-	
+
 	# Errors
 	for obj in [*test_sequences, test_dict, *test_numbers]:
 		with pytest.raises(TypeError):
 			im_i.dump(obj)
-	
+
 	# Read and check values
 	assert (outputdir / "im_i_dump.dat").exists()
 	loaded_im_i = pickle.load((outputdir / "im_i_dump.dat").open("rb"))
@@ -217,7 +218,7 @@ def test_time_list(tic):
 def test_get_time_list(tic):
 	with pytest.warns(DeprecationWarning):
 		tic.get_time_list()
-		
+
 
 # Inherited Methods from IntensityArrayMixin
 
@@ -262,15 +263,15 @@ def test_matrix_list(im):
 def test_get_index_at_time(tic):
 	assert isinstance(tic.get_index_at_time(12), int)
 	assert tic.get_index_at_time(12) == 10
-	
+
 	# Errors
 	for obj in [test_string, *test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			tic.get_index_at_time(obj)
-	
+
 	with pytest.raises(IndexError):
 		tic.get_index_at_time(-1)
-	
+
 	with pytest.raises(IndexError):
 		tic.get_index_at_time(1000000)
 
@@ -278,7 +279,7 @@ def test_get_index_at_time(tic):
 def test_get_time_at_index(tic):
 	assert isinstance(tic.get_time_at_index(test_int), float)
 	assert tic.get_time_at_index(test_int) == 1304.15599823
-	
+
 	# Errors
 	with pytest.raises(TypeError):
 		tic.get_time_at_index(test_string)
@@ -289,7 +290,7 @@ def test_get_time_at_index(tic):
 	with pytest.raises(TypeError):
 		tic.get_time_at_index({"a": 1, "b": 2, "c": 3, "d": 4})
 	# tic.get_time_at_index(0)
-	
+
 	with pytest.raises(IndexError):
 		tic.get_time_at_index(-1)
 	with pytest.raises(IndexError):

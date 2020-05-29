@@ -41,7 +41,7 @@ im = build_intensity_matrix(data)
 
 ms = im.get_ms_at_index(0)
 
-ms
+print(ms)
 
 
 # In[4]:

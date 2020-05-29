@@ -99,6 +99,3 @@ def test_scans(data):
 	#maximum mass found in 1st scan
 	assert isinstance(scans[0].max_mass, float)
 	assert scans[0].min_mass == 477.6667
-	
-	
-

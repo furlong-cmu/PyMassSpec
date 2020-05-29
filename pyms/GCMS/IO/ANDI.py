@@ -6,7 +6,7 @@ Functions for reading manufacturer specific ANDI-MS data files
 #                                                                              #
 #    PyMassSpec software for processing of mass-spectrometry data              #
 #    Copyright (C) 2005-2012 Vladimir Likic                                    #
-#    Copyright (C) 2019 Dominic Davis-Foster                                   #
+#    Copyright (C) 2019-2020 Dominic Davis-Foster                              #
 #                                                                              #
 #    This program is free software; you can redistribute it and/or modify      #
 #    it under the terms of the GNU General Public License version 2 as         #
@@ -56,72 +56,54 @@ def ANDI_reader(file_name):
 
 	:param file_name: The path of the ANDI-MS file
 	:type file_name: str or pathlib.Path
-	
+
 	:return: GC-MS data object
 	:rtype: :class:`pyms.GCMS.Class.GCMS_data`
 
 	:author: Qiao Wang
 	:author: Andrew Isaac
 	:author: Vladimir Likic
-	:author: Dominic Davis-Foster (pathlib support)
+	:author: Dominic Davis-Foster
 	"""
-	
+
 	if not isinstance(file_name, (str, pathlib.Path)):
 		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
-	# TODO: use 'point_count' and allow for zero len scans
 
 	rootgrp = Dataset(file_name, "r+", format='NETCDF3_CLASSIC')
 	# TODO: find out if netCDF4 throws specific errors that we can use here
-	
+
 	print(f" -> Reading netCDF file '{file_name}'")
-	
-	# print(rootgrp.variables[__MASS_STRING][:])
-	
+
 	scan_list = []
-	# mass = file.var(__MASS_STRING)  # old pycdf way
-	# intensity = file.var(__INTENSITY_STRING)  #old pycdf way
 	mass = rootgrp.variables[__MASS_STRING][:]
 	intensity = rootgrp.variables[__INTENSITY_STRING][:]
-	
+
+	scan_lengths = rootgrp.variables["point_count"]  # The number of data points in each scan
+
 	mass_values = mass.tolist()
-	mass_list = []
-	mass_previous = mass_values[0]
-	mass_list.append(mass_previous)
 	intensity_values = intensity.tolist()
-	intensity_list = []
-	intensity_previous = intensity_values[0]
-	intensity_list.append(intensity_previous)
-	if not len(mass_values) == len(intensity_values):
-		raise ValueError("length of mass_list is not equal to length of intensity_list !")
-	for i in range(len(mass_values) - 1):
-		# assume masses in ascending order until new scan
-		if mass_previous <= mass_values[i + 1]:
-			# print(mass_values[i+1])
-			mass_list.append(mass_values[i + 1])
-			mass_previous = mass_values[i + 1]
-			intensity_list.append(intensity_values[i + 1])
-			intensity_previous = intensity_values[i + 1]
-		# new scan
-		else:
-			scan_list.append(Scan(mass_list, intensity_list))
-			# print("Added scan")
-			mass_previous = mass_values[i + 1]
-			intensity_previous = intensity_values[i + 1]
-			mass_list = []
-			intensity_list = []
-			mass_list.append(mass_previous)
-			intensity_list.append(intensity_previous)
-	# store final scan
-	scan_list.append(Scan(mass_list, intensity_list))
-	# time = file.var(__TIME_STRING)  #old pycdf way
+
+	if len(mass_values) != len(intensity_values):
+		raise ValueError("The lengths of the mass and intensity lists differ!")
+
+	offset = 0
+	for idx, length in enumerate(scan_lengths):
+		mass_list = mass_values[offset:offset + length]
+		assert len(mass_values[offset:offset + length]) == length
+		intensity_list = intensity_values[offset:offset + length]
+		assert len(intensity_values[offset:offset + length]) == length
+		scan_list.append(Scan(mass_list, intensity_list))
+		offset += length
+
+	assert offset == len(mass_values)
+
 	time = rootgrp.variables[__TIME_STRING][:]
 	time_list = time.tolist()
-	
+
 	# sanity check
 	if not len(time_list) == len(scan_list):
 		raise ValueError("number of time points does not equal the number of scans")
-	
+
 	return GCMS_data(time_list, scan_list)
 
 
@@ -137,7 +119,7 @@ def ANDI_writer(file_name, im):
 	:author: Andrew Isaac
 	TODO: finish this
 	"""
-	
+
 	# netCDF header info for compatability
 	# attributes
 	# dataset_completeness   0 CHAR     6 C1+C2
@@ -166,7 +148,7 @@ def ANDI_writer(file_name, im):
 	# test_scan_function    20 CHAR    10 Mass Scan
 	# test_scan_law         22 CHAR     7 Linear
 	# test_separation_type  14 CHAR    18 No Chromatography
-	
+
 	# dimensions
 	# _128_byte_string       6    128
 	# _16_byte_string        3     16
@@ -181,7 +163,7 @@ def ANDI_writer(file_name, im):
 	# point_number           9 554826   X
 	# range                  8      2
 	# scan_number           11   9865
-	
+
 	# variables
 	# a_d_coaddition_factor   2 SHORT      0 scan_number(9865)
 	# a_d_sampling_rate      1 DOUBLE     0 scan_number(9865)
@@ -222,38 +204,36 @@ def ANDI_writer(file_name, im):
 	# time_range_min        11 DOUBLE     0 scan_number(9865)
 	# time_values           17 FLOAT      2 point_number(554826)
 	# total_intensity        8 DOUBLE     1 scan_number(9865)
-	
+
 	# variable information
 	# intensity_values attributes
-	
+
 	# name                 idx type   len value
 	# -------------------- --- ----   --- -----
 	# add_offset             1 DOUBLE   1 0.0
 	# scale_factor           2 DOUBLE   1 1.0
 	# units                  0 CHAR    26 Arbitrary Intensity Units
-	
+
 	# mass_values attributes
-	
+
 	# name                 idx type   len value
 	# -------------------- --- ----   --- -----
 	# scale_factor           1 DOUBLE   1 1.0
 	# units                  0 CHAR     4 M/Z
-	
+
 	# time_values attributes
-	
+
 	# name                 idx type   len value
 	# -------------------- --- ----   --- -----
 	# scale_factor           1 DOUBLE   1 1.0
 	# units                  0 CHAR     8 Seconds
-	
+
 	# total_intensity attributes
-	
+
 	# name                 idx type   len value
 	# -------------------- --- ----   --- -----
 	# units                  0 CHAR    26 Arbitrary Intensity Units
-	
 
-	
 	if not isinstance(file_name, str):
 		raise TypeError("'file_name' must be a string")
 	try:
@@ -263,13 +243,13 @@ def ANDI_writer(file_name, im):
 		nc.automode()
 	except CDFError:
 		raise IOError(f"Cannot create file '{file_name}'")
-	
+
 	mass_list = im.get_mass_list()
 	time_list = im.get_time_list()
-	
+
 	# direct access, don't modify
 	intensity_matrix = im.intensity_array
-	
+
 	# compress by ignoring zero intensities
 	# included for consistency with imported netCDF format
 	mass_values = []
@@ -283,17 +263,17 @@ def ANDI_writer(file_name, im):
 				intensity_values.append(intensity_matrix[row][col])
 				pc += 1
 		point_count_values.append(pc)
-	
+
 	# sanity checks
 	if not len(time_list) == len(point_count_values):
 		raise ValueError("number of time points does not equal the number of scans")
-	
+
 	# create dimensions
 	# total number of data points
 	dim_point_number = nc.def_dim(__POINT_NUMBER, len(mass_values))
 	# number of scans
 	dim_scan_number = nc.def_dim(__SCAN_NUMBER, len(point_count_values))
-	
+
 	# create variables
 	# points
 	var_mass_values = nc.def_var(__MASS_STRING, NC.FLOAT, dim_point_number)
@@ -303,7 +283,7 @@ def ANDI_writer(file_name, im):
 	var_time_list = nc.def_var(__TIME_STRING, NC.DOUBLE, dim_scan_number)
 	var_point_count_values = nc.def_var(__POINT_COUNT, NC.INT,
 										dim_scan_number)
-	
+
 	# populate variables
 	# points
 	var_mass_values[:] = mass_values
@@ -311,7 +291,6 @@ def ANDI_writer(file_name, im):
 	# scans
 	var_time_list[:] = time_list
 	var_point_count_values[:] = point_count_values
-	
+
 	# close file
 	nc.close()
-

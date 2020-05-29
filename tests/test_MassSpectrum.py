@@ -25,6 +25,7 @@ import requests
 
 # 3rd party
 import pytest
+import numpy
 
 # pyms
 from pyms.Spectrum import MassSpectrum
@@ -34,21 +35,21 @@ from .constants import *
 
 def test_MassSpectrum(ms):
 	assert isinstance(ms, MassSpectrum)
-	
-	assert isinstance(ms.mass_list, list)
-	assert isinstance(ms.mass_spec, list)
-	
-	# Errors
-	for obj in [test_string, test_int, test_list_strs, test_dict]:
-		with pytest.raises(TypeError):
-			MassSpectrum(obj, ms.mass_spec)
-	
-	for obj in [test_string, test_int, test_list_strs, test_dict]:
-		with pytest.raises(TypeError):
-			MassSpectrum(ms.mass_list, obj)
-	
-	with pytest.raises(ValueError):
-		MassSpectrum(ms.mass_list, test_list_ints)
+
+
+@pytest.mark.parametrize("obj, expects", [
+		(test_list_ints, ValueError),
+		(test_string, ValueError),
+		(test_list_strs, ValueError),
+		(test_int, TypeError),
+		(test_dict, TypeError),
+		])
+def test_errors(ms, obj, expects):
+	with pytest.raises(expects):
+		MassSpectrum(obj, ms.intensity_list)
+
+	with pytest.raises(expects):
+		MassSpectrum(ms.mass_list, obj)
 
 
 def test_len(ms):
@@ -71,22 +72,15 @@ def test_mass_spec(ms):
 	assert ms.mass_spec[5] == 4192.0
 	assert ms.mass_spec[50] == 3459.0
 	assert ms.mass_spec[100] == 0.0
-	
+
 	ms.mass_spec[0] = 123
 	assert ms.mass_spec[0] == 123
-	
+
 	assert ms.mass_spec == ms.intensity_list
-	
+
 	ms.mass_spec = list(range(len(ms.mass_spec)))
 	assert ms.mass_spec == list(range(len(ms.mass_spec)))
-	
-	# Errors
-	for obj in [*test_numbers, test_string, test_dict, test_list_strs]:
-		with pytest.raises(TypeError):
-			ms.mass_spec = obj
-		with pytest.raises(TypeError):
-			ms.intensity_list = obj
-	
+
 	# for type in [test_list_ints, test_tuple]:
 	# 	with pytest.raises(ValueError):
 	# 		ms.mass_spec = type
@@ -94,30 +88,48 @@ def test_mass_spec(ms):
 	# 		ms.intensity_list = types
 
 
+@pytest.mark.parametrize("obj, expects", [
+		(test_string, ValueError),
+		(test_dict, TypeError),
+		(test_list_strs, ValueError),
+		])
+def test_mass_spec_errors(ms, obj, expects):
+	with pytest.raises(expects):
+		ms.mass_spec = obj
+
+	with pytest.raises(expects):
+		ms.intensity_list = obj
+
+
 def test_mass_list(ms):
 	assert ms.mass_list[5] == 55
 	assert ms.mass_list[50] == 100
 	assert ms.mass_list[100] == 150
-	
+
 	ms.mass_list = list(range(len(ms.mass_list)))
-	assert ms.mass_list == list(range(len(ms.mass_list)))
-	
-	# Errors
-	for obj in [*test_numbers, test_string, test_dict, test_list_strs]:
-		with pytest.raises(TypeError):
-			ms.mass_list = obj
-	
+	assert list(ms.mass_list) == list(range(len(ms.mass_list)))
+
 	# for obj in [test_list_ints, test_tuple]:
 	# 	with pytest.raises(ValueError):
 	# 		ms.mass_list = obj
 
 
+@pytest.mark.parametrize("obj, expects", [
+		(test_string, ValueError),
+		(test_dict, TypeError),
+		(test_list_strs, ValueError),
+		])
+def test_mass_list_errors(ms, obj, expects):
+	with pytest.raises(expects):
+		ms.mass_list = obj
+
+
 def test_from_jcamp():
 	nist_data_dir = pathlib.Path("nist_jdx_files")
-	
+
 	if not nist_data_dir.exists():
 		nist_data_dir.mkdir(parents=True)
-	
+
 	# Compounds from nist
 	for cas in [
 			"122-39-4", "71-43-2", "85-98-3",
@@ -126,14 +138,14 @@ def test_from_jcamp():
 			]:
 		print(f"Testing CAS {cas}")
 		jcamp_file = nist_data_dir / f"{cas}.jdx"
-		
+
 		if not jcamp_file.exists():
 			r = requests.get(
 					f"https://webbook.nist.gov/cgi/cbook.cgi?JCAMP=C{cas.replace('-', '')}&Index=0&Type=Mass")
 			jcamp_file.write_bytes(r.content)
-	
+
 		MassSpectrum.from_jcamp(jcamp_file)
-	
+
 	# TODO: test jdx files from other sources
 
 
@@ -159,22 +171,21 @@ def test_from_mz_int_pairs():
 			(170, 1210),
 			(171, 85),
 			]
-	
+
 	ms = MassSpectrum.from_mz_int_pairs(mz_int_pairs)
-	
+
 	assert isinstance(ms, MassSpectrum)
 	assert len(ms) == len(mz_int_pairs)
 	assert ms.intensity_list[6] == 141
 	assert ms.intensity_list[30] == 1732
 	assert ms.mass_list[-1] == 171
 	assert ms.mass_list[2] == 32
-	
+
 	# Errors
 	for obj in [test_string, test_int, test_list_strs, test_dict, test_list_ints, test_tuple, (["abc", "123"])]:
 		with pytest.raises(TypeError):
 			MassSpectrum.from_mz_int_pairs(obj)
-	
+
 	for obj in [[(1, 2, 3)], ([1, 2, 3],), [(1,)], ([1],), [("abc", "123")]]:
 		with pytest.raises(ValueError):
 			MassSpectrum.from_mz_int_pairs(obj)
-

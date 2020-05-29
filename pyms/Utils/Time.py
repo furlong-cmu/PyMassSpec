@@ -79,7 +79,7 @@ def time_str_secs(time_str):
     time = float(time_number)
 
     if time_spec == "m":
-        time = time*60.0
+        time = time * 60.0
 
     return time
 
@@ -116,7 +116,7 @@ def window_sele_points(ic, window_sele, half_window=False):
             if window_sele % 2 == 0:
                 raise TypeError("window must be an odd number of points")
             else:
-                points = int(math.floor(window_sele*0.5))
+                points = int(math.floor(window_sele * 0.5))
         else:
             points = window_sele
     else:
@@ -124,9 +124,9 @@ def window_sele_points(ic, window_sele, half_window=False):
         time_step = ic.get_time_step()
 
         if half_window:
-            time = time*0.5
+            time = time * 0.5
 
-        points = int(math.floor(time/time_step))
+        points = int(math.floor(time / time_step))
 
     if half_window:
         if points < 1:

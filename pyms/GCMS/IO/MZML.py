@@ -37,6 +37,7 @@ except ModuleNotFoundError:
 # this package
 from pyms.GCMS.Class import GCMS_data
 from pyms.Spectrum import Scan
+from pyms.Base import is_path
 
 
 def mzML_reader(file_name):
@@ -52,25 +53,25 @@ def mzML_reader(file_name):
 	:author: Sean O'Callaghan
 	:author: Dominic Davis-Foster (pathlib support)
 	"""
-	
-	if not isinstance(file_name, (str, pathlib.Path)):
-		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
+
+	if not is_path(file_name):
+		raise TypeError("'file_name' must be a string or a PathLike object")
+
 	mzml_file = pymzml.run.Reader(str(file_name))
-	
+
 	try:  # avoid printing from each rank
 		comm = MPI.COMM_WORLD
 		rank = comm.Get_rank()
 		size = comm.Get_size()
-		
+
 		if rank == 0:
 			file_names = []
-			
+
 			for i in range(1, size):
 				recv_buffer = ""
 				file_n = comm.recv(recv_buffer, i)
 				file_names.append(file_n)
-			
+
 			print(" -> Reading mzML files:")
 			print(file_name)
 			for file_n in file_names:
@@ -81,18 +82,18 @@ def mzML_reader(file_name):
 	except Exception as e:
 		print(e)
 		print(f" -> Reading mzML file '{file_name}'")
-	
+
 	scan_list = []
 	time_list = []
-	
+
 	for spectrum in mzml_file:
 		mass_list = []
 		intensity_list = []
-		
+
 		for mz, i in spectrum.peaks:
 			mass_list.append(mz)
 			intensity_list.append(i)
-		
+
 		# scan_list.append(Scan(mass_list, intensity_list))
 		for element in spectrum.xmlTree:
 			# For some reason there are spectra with no time value,
@@ -101,10 +102,10 @@ def mzML_reader(file_name):
 				# We need time in seconds not minutes
 				time_list.append(60 * float(element.get('value')))
 				scan_list.append(Scan(mass_list, intensity_list))
-	
+
 	# print("time:", len(time_list))
 	# print("scan:", len(scan_list))
-	
+
 	data = GCMS_data(time_list, scan_list)
-	
+
 	return data

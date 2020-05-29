@@ -24,7 +24,7 @@ from pyms.GCMS.IO.JCAMP import JCAMP_reader
 
 jcamp_file = data_directory / "gc01_0812_066.jdx"
 data = JCAMP_reader(jcamp_file)
-data
+print(data)
 
 
 # Then the data can be converted to an |IntensityMatrix| using the function 
@@ -41,7 +41,7 @@ from pyms.IntensityMatrix import build_intensity_matrix
 
 im = build_intensity_matrix(data)
 
-im
+print(im)
 
 
 # The size as the number of scans and the number of bins can be returned with:
@@ -49,7 +49,7 @@ im
 # In[24]:
 
 
-im.size
+print(im.size)
 
 
 # There are 9865 scans and 551 bins in this example.
@@ -61,7 +61,7 @@ im.size
 # In[25]:
 
 
-im.mass_list[:10]
+print(im.mass_list[:10])
 
 
 # The attributes |im.min_mass| and |im.max_mass| return the minimum and maximum mass:
@@ -69,13 +69,13 @@ im.mass_list[:10]
 # In[26]:
 
 
-im.min_mass
+print(im.min_mass)
 
 
 # In[27]:
 
 
-im.max_mass
+print(im.max_mass)
 
 
 # It is also possible to search for a particular mass, by finding the index of
@@ -88,7 +88,7 @@ im.max_mass
 
 index = im.get_index_of_mass(73.3)
 
-index
+print(index)
 
 
 # The value of the closest mass can be returned by the method
@@ -113,7 +113,7 @@ im.get_mass_at_index(index)
 
 im = build_intensity_matrix(data, 0.5, 0.25, 0.25)
 
-im
+print(im)
 
 
 # The size of the intensity matrix will reflect the change in the number of bins:
@@ -121,13 +121,13 @@ im
 # In[31]:
 
 
-im.size
+print(im.size)
 
 
 # In[32]:
 
 
-im.mass_list[:10]
+print(im.mass_list[:10])
 
 
 # In this example there are 9865 scans (as before), but 1101 bins.
@@ -140,7 +140,7 @@ im.mass_list[:10]
 
 index = im.get_index_of_mass(73.3)
 
-index
+print(index)
 
 
 # In[34]:
@@ -162,19 +162,19 @@ im.get_mass_at_index(index)
 from pyms.IntensityMatrix import build_intensity_matrix_i
 
 im = build_intensity_matrix_i(data)
-im
+print(im)
 
 
 # In[36]:
 
 
-im.size
+print(im.size)
 
 
 # In[37]:
 
 
-im.mass_list[:10]
+print(im.mass_list[:10])
 
 
 # The masses are now integers.
@@ -183,7 +183,7 @@ im.mass_list[:10]
 
 
 index = im.get_index_of_mass(73.3)
-index
+print(index)
 
 
 # In[39]:

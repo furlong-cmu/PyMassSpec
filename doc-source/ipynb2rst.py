@@ -2,8 +2,15 @@
 Convert ipynb notebook to rst
 """
 
+# stdlib
 import io
 import pathlib
+
+# Install pandoc
+from pandoc_downloader import download_pandoc
+
+download_pandoc()
+
 
 # Import the RST exproter
 from nbconvert import RSTExporter
@@ -71,9 +78,6 @@ replacements = {
 		"plot_peaks()": ":py:meth:`plot_peaks() <pyms.Display.plot_peaks>`",
 		"ClickEventHandler": ":class:`pyms.Display.ClickEventHandler`",
 		"ClickEventHandler(peak_list=new_peak_list)": ":class:`pyms.Display.ClickEventHandler`",
-		
-		
-		
 		
 		}
 

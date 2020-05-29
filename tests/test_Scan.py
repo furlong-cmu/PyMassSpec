@@ -19,6 +19,7 @@
 #############################################################################
 
 # 3rd party
+import numpy
 import pytest
 
 # pyms
@@ -28,24 +29,25 @@ from pyms.Spectrum import Scan
 from .constants import *
 
 
-def test_Scan(scan):
-	
+def test_scan(scan):
 	assert isinstance(scan, Scan)
-	
 	assert isinstance(scan.mass_list, list)
 	assert isinstance(scan.intensity_list, list)
-	
-	# Errors
-	for obj in [test_string, test_int, test_list_strs, test_dict]:
-		with pytest.raises(TypeError):
-			Scan(obj, scan.intensity_list)
-	
-	for obj in [test_string, test_int, test_list_strs, test_dict]:
-		with pytest.raises(TypeError):
-			Scan(scan.mass_list, obj)
-	
-	with pytest.raises(ValueError):
-		Scan(scan.mass_list, test_list_ints)
+
+
+@pytest.mark.parametrize("obj, expects", [
+		(test_list_ints, ValueError),
+		(test_string, ValueError),
+		(test_list_strs, ValueError),
+		(test_int, TypeError),
+		(test_dict, TypeError),
+		])
+def test_errors(scan, obj, expects):
+	with pytest.raises(expects):
+		Scan(obj, scan.intensity_list)
+
+	with pytest.raises(expects):
+		Scan(scan.mass_list, obj)
 
 
 def test_len(scan):
@@ -53,25 +55,25 @@ def test_len(scan):
 
 
 def test_equality(im, scan):
-	assert scan != im.get_scan_at_index(1234)
 	assert scan == Scan(scan.mass_list, scan.intensity_list)
-	assert scan != test_list_ints
-	assert scan != test_list_strs
-	assert scan != test_tuple
-	assert scan != test_string
-	assert scan != test_int
-	assert scan != test_float
+	assert scan != im.get_scan_at_index(1234)
 
 
-def test_intensity_list(scan):
-	assert scan.intensity_list[5] == 1381.0
-	assert scan.intensity_list[50] == 673.0
-	assert scan.intensity_list[100] == 1728.0
-	
-	
-def test_mass_list(scan):
-	assert scan.mass_list[5] == 60.9465
-	assert scan.mass_list[50] == 138.8299
-	assert scan.mass_list[100] == 477.6667
-	
+@pytest.mark.parametrize(
+		"val",
+		[test_list_ints, test_list_strs, test_tuple, test_string, test_int, test_float])
+def test_inequality(scan, val):
+	assert scan != val
 
+
+@pytest.mark.parametrize(
+		"index, mass, intensity",
+		[(5, 60.9465, 1381.0), (50, 138.8299, 673.0), (100, 477.6667, 1728.0)])
+def test_scan_values(scan, index, mass, intensity):
+	assert scan.mass_list[index] == mass
+	assert scan.intensity_list[index] == intensity
+
+
+def test_zero_length():
+	# TODO: finish
+	scan = Scan([], [])

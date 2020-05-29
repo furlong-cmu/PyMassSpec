@@ -39,6 +39,7 @@ View the :ref:`Function Index <genindex>` or browse the `Source Code <_modules/i
     pyms/Simulator
     pyms/TopHat
     pyms/Utils
+    changelog
 
 
 .. toctree::

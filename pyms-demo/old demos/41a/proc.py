@@ -25,4 +25,3 @@ tic3 = window_smooth(tic, window='7s')
 tic.write("output/tic.dat",minutes=True)
 tic1.write("output/tic1.dat",minutes=True)
 tic2.write("output/tic2.dat",minutes=True)
-

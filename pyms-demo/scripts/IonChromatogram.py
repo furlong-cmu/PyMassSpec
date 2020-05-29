@@ -40,7 +40,7 @@ im = build_intensity_matrix(data)
 # In[3]:
 
 
-data.tic
+print(data.tic)
 
 
 # The |IonChromatogram| at index 0 can be obtained with:
@@ -72,4 +72,3 @@ data.tic.is_tic()
 
 
 im.get_ic_at_mass(73).is_tic()
-

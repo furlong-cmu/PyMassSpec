@@ -55,4 +55,3 @@ A9 = align_with_tree(T9)
 
 top_ion_list = A9.common_ion()
 A9.write_common_ion_csv('output/area.csv', top_ion_list)
-

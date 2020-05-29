@@ -37,6 +37,7 @@ from pyms import __version__
 from pyms.Base import pymsBaseClass
 from pyms.Peak.List.Function import is_peak_list, sele_peaks_by_rt
 from pyms.Utils.IO import prepare_filepath
+from pyms.Utils.Utils import is_path
 
 
 class Experiment(pymsBaseClass):
@@ -52,53 +53,53 @@ class Experiment(pymsBaseClass):
 	:author: Andrew Isaac
 	:author: Dominic Davis-Foster (type assertions, properties and pathlib support)
 	"""
-	
+
 	def __init__(self, expr_code, peak_list):
 		"""
 		Models an experiment
 		"""
-		
+
 		if not isinstance(expr_code, str):
 			raise TypeError("'expr_code' must be a string")
 		if not is_peak_list(peak_list):
 			raise TypeError("'peak_list' must be a list of Peak objects")
-		
+
 		self._expr_code = expr_code
 		self._peak_list = peak_list
-	
+
 	def __eq__(self, other):
 		"""
 		Return whether this Experiment object is equal to another object
-		
+
 		:param other: The other object to test equality with
 		:type other: object
-		
+
 		:rtype: bool
 		"""
-		
+
 		if isinstance(other, self.__class__):
 			return self.peak_list == other.peak_list and self.expr_code == other.expr_code
-		
+
 		return NotImplemented
-	
+
 	def __len__(self):
 		"""
 		Returns the number of peaks in the Experiment
-		
+
 		:rtype: int
 		"""
-		
+
 		return len(self.peak_list)
-	
+
 	def __copy__(self):
 		"""
 		Returns a new Experiment object containing a copy of the data in this object
-		
+
 		:rtype: pyms.Experiment.Experiment
 		"""
-		
+
 		return Experiment(copy.copy(self._expr_code), copy.copy(self.peak_list))
-	
+
 	def __deepcopy__(self, memodict={}):
 		"""
 		Returns a new Experiment object containing a copy of the data in this object
@@ -107,7 +108,7 @@ class Experiment(pymsBaseClass):
 		"""
 
 		return self.__copy__()
-	
+
 	@property
 	def expr_code(self):
 		"""
@@ -116,7 +117,7 @@ class Experiment(pymsBaseClass):
 		:return: The expr_code of the experiment
 		:rtype: str
 		"""
-		
+
 		return self._expr_code
 
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
@@ -130,7 +131,7 @@ class Experiment(pymsBaseClass):
 		:rtype: str
 		"""
 		return self.expr_code
-		
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use :attr:`pyms.Experiment.Experiment.peak_list` instead")
@@ -141,9 +142,9 @@ class Experiment(pymsBaseClass):
 		:return: A list of peaks
 		:rtype: :class;`list` of :class:`pyms.Peak.Class.Peak` objects
 		"""
-		
+
 		return self.peak_list
-	
+
 	@property
 	def peak_list(self):
 		"""
@@ -152,9 +153,9 @@ class Experiment(pymsBaseClass):
 		:return: A list of peaks
 		:rtype: :class;`list` of :class:`pyms.Peak.Class.Peak` objects
 		"""
-		
+
 		return self._peak_list
-	
+
 	def sele_rt_range(self, rt_range):
 		"""
 		Discards all peaks which have the retention time outside the specified range
@@ -162,33 +163,33 @@ class Experiment(pymsBaseClass):
 		:param rt_range: Min, max retention time given as a list [rt_min,rt_max]
 		:type rt_range: list
 		"""
-		
+
 		if not isinstance(rt_range, list):
 			raise TypeError("'rt_range' must be a list")
-		
+
 		peaks_sele = sele_peaks_by_rt(self._peak_list, rt_range)
 		self._peak_list = peaks_sele
-	
+
 	@deprecation.deprecated(deprecated_in="2.1.2", removed_in="2.2.0",
 							current_version=__version__,
 							details="Use :meth:`pyms.Experiment.Experiment.dump` instead")
 	def store(self, file_name):
 		"""
 		stores an experiment to a file
-	
+
 		:param file_name: The name of the file
 		:type file_name: str or pathlib.Path
-	
+
 		:author: Vladimir Likic
 		:author: Andrew Isaac
 		:author: Dominic Davis-Foster (pathlib support)
 		"""
-		
-		if not isinstance(file_name, (str, pathlib.Path)):
-			raise TypeError("'file_name' must be a string or a pathlib.Path object")
-		
+
+		if not is_path(file_name):
+			raise TypeError("'file_name' must be a string or a PathLike object")
+
 		file_name = prepare_filepath(file_name)
-		
+
 		fp = file_name.open('wb')
 		pickle.dump(self, fp, 1)
 		fp.close()
@@ -206,27 +207,26 @@ def read_expr_list(file_name):
 
 	:author: Vladimir Likic
 	"""
-	
-	if not isinstance(file_name, (str, pathlib.Path)):
-		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
-	if not isinstance(file_name, pathlib.Path):
-		file_name = pathlib.Path(file_name)
+
+	if not is_path(file_name):
+		raise TypeError("'file_name' must be a string or a PathLike object")
+
+	file_name = prepare_filepath(file_name, mkdirs=False)
 
 	fp = file_name.open()
-	
+
 	exprfiles = fp.readlines()
 	fp.close()
-	
+
 	expr_list = []
-	
+
 	for exprfile in exprfiles:
-		
+
 		exprfile = exprfile.strip()
 		expr = load_expr(exprfile)
-		
+
 		expr_list.append(expr)
-	
+
 	return expr_list
 
 
@@ -236,7 +236,7 @@ def load_expr(file_name):
 
 	:param file_name: Experiment file name
 	:type file_name: str or pathlib.Path
-	
+
 	:return: The loaded experiment
 	:rtype: pyms.Experiment.Experiment
 
@@ -244,20 +244,19 @@ def load_expr(file_name):
 	:author: Andrew Isaac
 	:author: Dominic Davis-Foster (type assertions and pathlib support)
 	"""
-	
-	if not isinstance(file_name, (str, pathlib.Path)):
-		raise TypeError("'file_name' must be a string or a pathlib.Path object")
-	
-	if not isinstance(file_name, pathlib.Path):
-		file_name = pathlib.Path(file_name)
-	
+
+	if not is_path(file_name):
+		raise TypeError("'file_name' must be a string or a PathLike object")
+
+	file_name = prepare_filepath(file_name, mkdirs=False)
+
 	fp = file_name.open('rb')
 	expr = pickle.load(fp)
 	fp.close()
-	
+
 	if not isinstance(expr, Experiment):
 		raise IOError("The loaded file is not an experiment file")
-	
+
 	return expr
 
 
@@ -277,16 +276,16 @@ def store_expr(file_name, expr):
 	:author: Andrew Isaac
 	:author: Dominic Davis-Foster (type assertions)
 	"""
-	
+
 	if not isinstance(expr, Experiment):
 		raise TypeError("'expr' must be an Experiment object")
-	
+
 	if not isinstance(file_name, str):
 		raise TypeError("'file_name' must be a string")
-	
+
 	if not os.path.exists(os.path.dirname(file_name)):
 		os.makedirs(os.path.dirname(file_name))
-	
+
 	fp = open(file_name, 'wb')
 	pickle.dump(expr, fp, 1)
 	fp.close()

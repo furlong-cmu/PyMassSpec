@@ -1,21 +1,11 @@
-import bisect
-import collections
-import collections.abc
-import copy
-import decimal
-import doctest
 import math
-import pickle
 import random
-import sys
-import unittest
-from test import support
-
+import statistics
 from decimal import Decimal
 from fractions import Fraction
 
 import pytest
-import statistics
+
 from pyms.Utils import Math
 
 
@@ -25,7 +15,7 @@ class TestMean:
 		assert statistics.mean([1e100, 1, 3, -1e100]) == 1
 		assert Math.mean([1e100, 1, 3, -1e100]) == 1
 		assert statistics.mean([1e100, 1, 3, -1e100]) == Math.mean([1e100, 1, 3, -1e100])
-	
+
 	def test_ints(self):
 		# Test mean with ints.
 		data = [0, 1, 2, 3, 3, 3, 4, 5, 5, 6, 7, 7, 7, 7, 8, 9]
@@ -33,7 +23,7 @@ class TestMean:
 		assert statistics.mean(data) == 4.8125
 		assert Math.mean(data) == 4.8125
 		assert statistics.mean(data) == Math.mean(data)
-	
+
 	def test_floats(self):
 		# Test mean with floats.
 		data = [17.25, 19.75, 20.0, 21.5, 21.75, 23.25, 25.125, 27.5]
@@ -49,15 +39,16 @@ class TestMean:
 		assert statistics.mean(data) == Decimal("3.5896")
 		assert Math.mean(data) == Decimal("3.5896")
 		assert statistics.mean(data) == Math.mean(data)
-	
+
 	def test_fractions(self):
 		# Test mean with Fractions.
-		data = [Fraction(1, 2), Fraction(2, 3), Fraction(3, 4), Fraction(4, 5), Fraction(5, 6), Fraction(6, 7), Fraction(7, 8)]
+		data = [Fraction(1, 2), Fraction(2, 3), Fraction(3, 4), Fraction(4, 5), Fraction(5, 6), Fraction(6, 7),
+				Fraction(7, 8)]
 		random.shuffle(data)
 		assert statistics.mean(data) == Fraction(1479, 1960)
 		assert Math.mean(data) == Fraction(1479, 1960)
 		assert statistics.mean(data) == Math.mean(data)
-	
+
 	def test_inf(self):
 		# Test mean with infinities.
 		raw = [1, 3, 5, 7, 9]  # Use only ints, to avoid TypeError later.
@@ -70,13 +61,13 @@ class TestMean:
 				assert math.isinf(Math.mean(data))
 				assert Math.mean(data) == inf
 				assert statistics.mean(data) == Math.mean(data)
-				
+
 	def test_mismatched_infs(self):
 		# Test mean with infinities of opposite sign.
 		data = [2, 4, 6, float('inf'), 1, 3, 5, float('-inf')]
 		assert math.isnan(statistics.mean(data))
 		assert math.isnan(Math.mean(data))
-		
+
 	def test_nan(self):
 		# Test mean with NANs.
 		raw = [1, 3, 5, 7, 9]  # Use only ints, to avoid TypeError later.
@@ -85,7 +76,7 @@ class TestMean:
 			data = raw + [inf]
 			assert math.isnan(statistics.mean(data))
 			assert math.isnan(Math.mean(data))
-	
+
 	def test_big_data(self):
 		# Test adding a large constant to every data point.
 		c = 1e9
@@ -95,7 +86,7 @@ class TestMean:
 		assert statistics.mean([x + c for x in data]) == expected
 		assert Math.mean([x + c for x in data]) == expected
 		assert statistics.mean([x + c for x in data]) == Math.mean([x + c for x in data])
-	
+
 	def test_doubled_data(self):
 		# Mean of [a,b,c...z] should be same as for [a,a,b,b,c,c...z,z].
 		data = [random.uniform(-3, 5) for _ in range(1000)]
@@ -103,7 +94,7 @@ class TestMean:
 		assert statistics.mean(data * 2) == expected
 		assert Math.mean(data * 2) == expected
 		assert statistics.mean(data * 2) == Math.mean(data * 2)
-	
+
 	def test_regression_20561(self):
 		# Regression test for issue 20561.
 		# See http://bugs.python.org/issue20561
@@ -111,14 +102,15 @@ class TestMean:
 		assert statistics.mean([d]) == d
 		assert Math.mean([d]) == d
 		assert Math.mean([d]) == statistics.mean([d])
-	
+
 	def test_regression_25177(self):
 		# Regression test for issue 25177.
 		# Ensure very big and very small floats don't overflow.
 		# See http://bugs.python.org/issue25177.
 		assert statistics.mean([8.988465674311579e+307, 8.98846567431158e+307]) == 8.98846567431158e+307
 		assert Math.mean([8.988465674311579e+307, 8.98846567431158e+307]) == 8.98846567431158e+307
-		assert statistics.mean([8.988465674311579e+307, 8.98846567431158e+307]) == Math.mean([8.988465674311579e+307, 8.98846567431158e+307])
+		assert statistics.mean([8.988465674311579e+307, 8.98846567431158e+307]) == Math.mean(
+				[8.988465674311579e+307, 8.98846567431158e+307])
 		big = 8.98846567431158e+307
 		tiny = 5e-324
 		for n in (2, 3, 5, 200):
@@ -227,4 +219,3 @@ class TestStdev:
 		assert Math.std(data) == exact
 		assert statistics.stdev(data) == Math.std(data)
 		assert isinstance(statistics.stdev(data), Decimal)
-

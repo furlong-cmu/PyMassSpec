@@ -32,11 +32,11 @@ from .constants import *
 
 def test_savitzky_golay(tic):
 	assert isinstance(tic, IonChromatogram)
-	
+
 	# apply noise smoothing
 	tic1 = savitzky_golay(tic)
 	assert isinstance(tic1, IonChromatogram)
-	
+
 	assert tic1 != tic
 	assert tic1.is_tic()
 	assert len(tic1) == 2103
@@ -50,55 +50,52 @@ def test_savitzky_golay(tic):
 	assert tic1.time_step == tic1.time_step
 	assert tic1.get_index_at_time(12) == 10
 	assert tic1.get_index_at_time(12) == tic1.get_index_at_time(12)
-	
+
 	with pytest.warns(Warning):
 		tic1.mass
-	
+
 	# Test Errors
 	for obj in [test_string, *test_numbers, *test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			savitzky_golay(obj)
-	
+
 	for obj in [test_string, test_float, *test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			savitzky_golay(tic, degree=obj)
-	
+
 	for obj in [test_float, *test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			savitzky_golay(tic, window=obj)
-		
+
 
 def test_savitzky_golay_intensity_matrix(im, tic):
 	# Use Savitzky-Golay filtering to smooth all IC's in the IM
 	im_smooth = savitzky_golay_im(im)
 	assert isinstance(im_smooth, IntensityMatrix)
-	
+
 	# find the IC for derivatisation product ion before smoothing
 	ic = im.get_ic_at_index(73)
 	assert isinstance(ic, IonChromatogram)
-	
+
 	# find the IC for derivatisation product ion after smoothing
 	ic_smooth = im_smooth.get_ic_at_index(73)
 	assert isinstance(ic_smooth, IonChromatogram)
-	
+
 	# TODO: value assertions
-	
+
 	savitzky_golay_im(im, degree=5)
 	savitzky_golay_im(im, window=5)
-	
+
 	# Test Errors
-	
+
 	for obj in [test_string, *test_numbers, *test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			savitzky_golay_im(obj)
-	
+
 	for obj in [test_string, test_float, *test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			savitzky_golay_im(im, degree=obj)
-		
+
 	for obj in [test_float, *test_lists, test_dict]:
 		with pytest.raises(TypeError):
 			savitzky_golay_im(im, window=obj)
-
-
-

@@ -24,8 +24,9 @@ import pickle
 from copy import deepcopy
 
 # 3rd party
-import pytest
 import deprecation
+import numpy
+import pytest
 
 # pyms
 from pyms.GCMS.Class import GCMS_data
@@ -42,7 +43,7 @@ def test_JCAMP_reader(datadir):
 	for obj in [*test_numbers, *test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			JCAMP_reader(obj)
-	
+
 	with pytest.raises(FileNotFoundError):
 		JCAMP_reader(test_string)
 
@@ -53,14 +54,14 @@ def test_JCAMP_reader(datadir):
 
 def test_GCMS_data(data):
 	assert isinstance(data, GCMS_data)
-	
+
 	GCMS_data(data.time_list, data.scan_list)
-	
+
 	# Errors
 	for obj in [test_string, *test_numbers, test_list_strs, test_dict]:
 		with pytest.raises(TypeError):
 			GCMS_data(obj, data.scan_list)
-	
+
 	for obj in [test_string, *test_numbers, *test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			GCMS_data(data.time_list, obj)
@@ -110,7 +111,7 @@ def test_info(capsys, data):
 def test_scan_list(data):
 	# raw scans
 	scans = data.scan_list
-	
+
 	assert isinstance(scans, list)
 	assert isinstance(scans[0], Scan)
 	assert len(scans[0]) == 101
@@ -118,16 +119,16 @@ def test_scan_list(data):
 	# 1st mass value for 1st scan
 	assert isinstance(scans[0].mass_list[0], float)
 	assert scans[0].mass_list[0] == 52.0131
-	
+
 	assert isinstance(scans[0].intensity_list, list)
 	# 1st intensity value for 1st scan
 	assert isinstance(scans[0].intensity_list[0], float)
 	assert scans[0].intensity_list[0] == 5356.0
-	
+
 	# minimum mass found in 1st scan
 	assert isinstance(scans[0].min_mass, float)
 	assert scans[0].min_mass == 52.0131
-	
+
 	# maximum mass found in 1st scan
 	assert isinstance(scans[0].max_mass, float)
 	assert scans[0].max_mass == 477.6667
@@ -139,22 +140,22 @@ def test_tic(data):
 	# number of scans in TIC
 	assert len(tic) == 2103
 	assert len(tic) == len(data.time_list)
-	
+
 	# start time of TIC
 	assert isinstance(tic.get_time_at_index(0), float)
 	assert tic.get_time_at_index(0) == 1.05200003833
 	assert isinstance(tic.get_index_at_time(1.05203833), int)
 	assert tic.get_index_at_time(1.05203833) == 0
 	assert tic.get_index_at_time(2) == 1
-	
+
 	assert isinstance(tic.get_intensity_at_index(44), float)
 	assert tic.get_intensity_at_index(44) == 3113615.0
-	
+
 	assert isinstance(tic.time_list, list)
 	assert tic.time_list[0] == 1.05200003833
-	
+
 	assert isinstance(tic.time_step, float)
-	
+
 	assert isinstance(tic.is_tic(), bool)
 	assert tic.is_tic()
 
@@ -163,43 +164,43 @@ def test_trim(data):
 	# time
 	trimmed = deepcopy(data)
 	trimmed.trim("6.5m", "21m")
-	
+
 	assert trimmed.min_mass == 50.2516
 	assert trimmed.max_mass == 499.6226
-	
+
 	time = trimmed.time_list
 	assert len(time) == 825
 	assert time[0] == 390.715999603
 	assert trimmed.get_index_at_time(400.0) == 9
-	
+
 	scans = trimmed.scan_list
 	assert scans[0].mass_list[0] == 51.0066
-	
+
 	# Scans
 	trimmed = deepcopy(data)
 	trimmed.trim(1000, 2000)
-	
+
 	assert trimmed.min_mass == 50.2516
 	assert trimmed.max_mass == 499.6226
-	
+
 	time = trimmed.time_list
 	assert len(time) == 1002
 	assert time[0] == 1055.99601746
 	assert trimmed.get_index_at_time(1500.0) == 420
-	
+
 	scans = trimmed.scan_list
 	assert scans[0].mass_list[0] == 50.8808
-	
+
 	trimmed.trim(end=1000)
 	assert len(trimmed.time_list) == 1001
-	
+
 	trimmed.trim(begin=2)
 	assert len(trimmed.time_list) == 1000
-	
+
 	# Errors
 	with pytest.raises(SyntaxError):
 		trimmed.trim()
-	
+
 	for obj in [*test_sequences, test_dict]:
 		with pytest.raises(TypeError):
 			trimmed.trim(begin=obj)
@@ -209,12 +210,12 @@ def test_trim(data):
 
 def test_write(data, outputdir):
 	data.write(outputdir / "jcamp_gcms_data")
-	
+
 	# Errors
 	for obj in [*test_sequences, test_dict, *test_numbers]:
 		with pytest.raises(TypeError):
 			data.write(obj)
-	
+
 	# Read .I.csv and check values
 	assert (outputdir / "jcamp_gcms_data.I.csv").exists()
 	i_csv = list(csv.reader((outputdir / "jcamp_gcms_data.I.csv").open()))
@@ -231,7 +232,7 @@ def test_write(data, outputdir):
 			1422.0, 673.0, 673.0, 896.0, 673.0, 90.0, 673.0, 673.0, 673.0, 673.0, 826.0,
 			673.0, 673.0, 673.0, 2059.0, 673.0, 749.0, 673.0, 826.0,
 			]
-	
+
 	assert [float(x) for x in i_csv[50]] == [
 			1646.0, 3660.0, 579.0, 3975.0, 21666.0, 910.0, 749.0, 2434.0, 3471.0,
 			661.0, 2776.0, 544.0, 673.0, 1342.0, 2776.0, 2631.0, 3922.0, 677.0, 5416.0,
@@ -244,7 +245,7 @@ def test_write(data, outputdir):
 			673.0, 1322.0, 673.0, 749.0, 673.0, 749.0, 902.0, 826.0, 673.0, 749.0,
 			1422.0, 673.0, 673.0, 673.0, 673.0, 673.0,
 			]
-	
+
 	assert [float(x) for x in i_csv[500]] == [
 			7353.0, 2778.0, 963.0, 1884.0, 1365.0, 702.0, 5346.0, 672.0, 5403.0,
 			2089.0, 749.0, 3020.0, 4895.0, 370.0, 2420.0, 7680.0, 644.0, 673.0, 826.0,
@@ -257,7 +258,7 @@ def test_write(data, outputdir):
 			673.0, 673.0, 673.0, 978.0, 673.0, 673.0, 1575.0, 673.0, 1499.0, 673.0,
 			673.0, 902.0, 673.0, 749.0, 673.0, 2477.0, 673.0,
 			]
-	
+
 	# Read .mz.csv and check values
 	assert (outputdir / "jcamp_gcms_data.mz.csv").exists()
 	i_csv = list(csv.reader((outputdir / "jcamp_gcms_data.mz.csv").open()))
@@ -278,7 +279,7 @@ def test_write(data, outputdir):
 			314.8539, 317.5591, 337.8163, 343.6670, 371.0961, 377.8275, 398.3364,
 			406.1373, 465.7766,
 			]
-	
+
 	assert [float(x) for x in i_csv[50]] == [
 			50.8178, 52.0761, 52.7052, 54.9699, 56.7944, 57.6751, 58.5559, 59.2479,
 			60.5690, 61.4497, 62.7080, 64.7211, 66.7342, 70.0685, 72.3333, 72.9624,
@@ -294,7 +295,7 @@ def test_write(data, outputdir):
 			335.0482, 344.6107, 361.0933, 372.8575, 397.3927, 417.3983, 435.3907,
 			439.6058, 462.0649, 486.6630,
 			]
-	
+
 	assert [float(x) for x in i_csv[500]] == [
 			50.7549, 51.8244, 52.7052, 54.4037, 55.0958, 55.7878, 56.9202, 57.8009,
 			58.6817, 59.8141, 61.6385, 62.6450, 64.4695, 65.2244, 68.0554, 68.7474,
@@ -314,12 +315,12 @@ def test_write(data, outputdir):
 
 def test_write_intensities_stream(data, outputdir):
 	data.write_intensities_stream(outputdir / "jcamp_intensity_stream.csv")
-	
+
 	# Errors
 	for obj in [*test_sequences, test_dict, *test_numbers]:
 		with pytest.raises(TypeError):
 			data.write_intensities_stream(obj)
-	
+
 	# Read and check values
 	assert (outputdir / "jcamp_intensity_stream.csv").exists()
 	intensity_stream = list((outputdir / "jcamp_intensity_stream.csv").open().readlines())
@@ -332,12 +333,12 @@ def test_write_intensities_stream(data, outputdir):
 
 def test_dump(data, outputdir):
 	data.dump(outputdir / "JCAMP_dump.dat")
-	
+
 	# Errors
 	for obj in [*test_sequences, test_dict, *test_numbers]:
 		with pytest.raises(TypeError):
 			data.dump(obj)
-	
+
 	# Read and check values
 	assert (outputdir / "JCAMP_dump.dat").exists()
 	loaded_data = pickle.load((outputdir / "JCAMP_dump.dat").open("rb"))
@@ -395,7 +396,7 @@ def test_get_index_at_time(data):
 	# index of 400sec in time_list
 	assert isinstance(data.get_index_at_time(400.0), int)
 	assert data.get_index_at_time(400.0) == 378
-	
+
 	# Errors
 	for obj in [test_dict, *test_lists, test_string, test_tuple]:
 		with pytest.raises(TypeError):
@@ -409,7 +410,7 @@ def test_get_index_at_time(data):
 def test_get_time_at_index(data):
 	assert isinstance(data.get_time_at_index(400), float)
 	assert data.get_time_at_index(400) == 423.45199585
-	
+
 	# Errors
 	for obj in [test_dict, *test_lists, test_string, test_tuple]:
 		with pytest.raises(TypeError):

@@ -58,7 +58,7 @@ noise_level = window_analyzer(tic)
 
 from pyms.BillerBiemann import num_ions_threshold
 filtered_peak_list = num_ions_threshold(peak_list, n=3, cutoff=noise_level)
-filtered_peak_list[:10]
+print(filtered_peak_list[:10])
 
 
 # Given a list of peaks, areas can be determined and added as follows:
@@ -70,4 +70,3 @@ from pyms.Peak.Function import peak_sum_area
 for peak in peak_list:
     area = peak_sum_area(im, peak)
     peak.area = area
-

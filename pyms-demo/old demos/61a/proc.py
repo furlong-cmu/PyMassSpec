@@ -19,7 +19,11 @@ base_path = "data/"
 expr_codes = [ "a0806_077", "a0806_078", "a0806_079" ]
 
 # deconvolution and peak list filtering parameters
-points = 9; scans = 2; n = 3; t = 3000; r = 2
+points = 9
+scans = 2
+n = 3
+t = 3000
+r = 2
 
 # loop over all experiments
 for expr_code in expr_codes:
@@ -87,5 +91,3 @@ for expr_code in expr_codes:
     print(f"\t -> Saving the result as '{output_file}'")
 
     store_expr(output_file, expr)
-
-

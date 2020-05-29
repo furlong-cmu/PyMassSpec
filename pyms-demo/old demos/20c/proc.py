@@ -20,4 +20,3 @@ data.info()
 # two ascii data tables, data.I.csv and data.mz.csv
 # with intensities and m/z values
 data.write("output/data")
-

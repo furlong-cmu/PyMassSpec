@@ -1,3 +1,4 @@
+# This file is managed by `git_helper`. Don't edit it directly
 # Copyright (C) 2019-2020 Dominic Davis-Foster <dominic@davis-foster.co.uk>
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -17,73 +18,100 @@
 
 import pathlib
 
-copyright = """
+__all__ = [
+		"__copyright__",
+		"__version__",
+		"modname",
+		"pypi_name",
+		"py_modules",
+		"entry_points",
+		"__license__",
+		"short_desc",
+		"author",
+		"author_email",
+		"github_username",
+		"web",
+		"github_url",
+		"project_urls",
+		"repo_root",
+		"long_description",
+		"install_requires",
+		"extras_require",
+		"classifiers",
+		"keywords",
+		"import_name",
+		]
+
+__copyright__ = """
 2019-2020 Dominic Davis-Foster <dominic@davis-foster.co.uk>
 """
 
-VERSION = "2.2.21"
+__version__ = "2.2.21"
 
-modname = "pyms"
-py_modules = None
-entry_points = None
+modname = "PyMassSpec"
+pypi_name = "PyMassSpec"
+import_name = "pyms"
+py_modules = []
+entry_points = {
+		"console_scripts": []
+		}
 
+__license__ = "GNU General Public License v2 (GPLv2)"
 
-license = 'GPL2'
+short_desc = "Python Toolkit for Mass Spectrometry"
 
-short_desc = 'Python Toolkit for Mass Spectrometry'
-
-author = "Dominic Davis-Foster"
+__author__ = author = "Dominic Davis-Foster"
 author_email = "dominic@davis-foster.co.uk"
 github_username = "domdfcoding"
-web = github_url = f"https://github.com/{github_username}/PyMassSpec"
+web = github_url = f"https://github.com/domdfcoding/PyMassSpec"
+project_urls = {
+		"Documentation": f"https://PyMassSpec.readthedocs.io",  # TODO: Make this link match the package version
+		"Issue Tracker": f"{github_url}/issues",
+		"Source Code": github_url,
+		}
 
-# Original Author Sean O'Callaghan <spoc@unimelb.edu.au>,
+repo_root = pathlib.Path(__file__).parent
 
 # Get info from files; set: long_description
-if pathlib.Path.cwd().name == "UserGuide":
-	print(pathlib.Path.cwd().parent / "README.rst")
-	install_requires = (pathlib.Path.cwd().parent / "requirements.txt").read_text().split("\n")
-	long_description = (pathlib.Path.cwd().parent / "README.rst").read_text() + '\n'
-else:
-	print(pathlib.Path("README.rst"))
-	install_requires = pathlib.Path("requirements.txt").read_text().split("\n")
-	long_description = pathlib.Path("README.rst").read_text() + '\n'
+long_description = (repo_root / "README.rst").read_text().replace("2.2.21", __version__) + '\n'
+conda_description = """Python Toolkit for Mass Spectrometry
 
-long_description = long_description.replace(":ref:`here <pyms-demo>`.", "`here <pyms_demo_>`__.")
-long_description = long_description.replace(":ref:`here <pyms-demo/data-files>`.", "`here <datafiles_>`__.")
-long_description = long_description.replace(":ref:`Demos and Examples <pyms-demo>`",
-											"`Demos and Examples <pyms_demo_>`__")
-long_description = long_description.replace(":ref:`pyms-demo/20a/`", "`pyms-demo/20a/`")
-long_description += """
+
+Before installing please ensure you have added the following channels: bioconda, conda-forge, domdfcoding"""
+__all__.append("conda_description")
+
+install_requires = (repo_root / "requirements.txt").read_text().split('\n')
+extras_require = {'all': []}
+
+classifiers = [
+		'Development Status :: 5 - Production/Stable',
+		'Intended Audience :: Developers',
+		'Intended Audience :: Education',
+		'Intended Audience :: End Users/Desktop',
+		'Intended Audience :: Science/Research',
+		'Operating System :: OS Independent',
+		'Topic :: Education',
+		'Topic :: Scientific/Engineering :: Bio-Informatics',
+		'Topic :: Scientific/Engineering :: Chemistry',
+		'Topic :: Software Development :: Libraries :: Python Modules',
+		'Programming Language :: Python :: 3.6',
+		'Programming Language :: Python :: Implementation :: CPython',
+		'Programming Language :: Python :: 3.7',
+		'Programming Language :: Python :: 3.8',
+		'Programming Language :: Python',
+		'Programming Language :: Python :: 3 :: Only',
+		'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+
+		]
+
+keywords = ""
+
+long_description = long_description.replace(':ref:`here <pyms-demo>`.', '`here <pyms_demo_>`__.')
+long_description = long_description.replace(':ref:`here <pyms-demo/data-files>`.', '`here <datafiles_>`__.')
+long_description = long_description.replace(':ref:`Demos and Examples <pyms-demo>`', '`Demos and Examples <pyms_demo_>`__')
+long_description = long_description.replace(':ref:`pyms-demo/20a/`', '`pyms-demo/20a/`')
+long_description += '''
 
 .. _pyms_demo: https://pymassspec.readthedocs.io/en/master/pyms-demo/introduction.html#pyms-demo
 .. _datafiles: https://pymassspec.readthedocs.io/en/master/pyms-demo/data-files.html
-
-"""
-
-classifiers = [
-		# "Development Status :: 4 - Beta",
-		"Development Status :: 5 - Production/Stable",
-		# "Development Status :: 6 - Mature",
-		# "Development Status :: 7 - Inactive",
-		
-		"Operating System :: OS Independent",
-		
-		"Intended Audience :: Developers",
-		"Intended Audience :: Education",
-		"Intended Audience :: End Users/Desktop",
-		"Intended Audience :: Science/Research",
-		
-		"License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
-		
-		"Programming Language :: Python :: 3.6",
-		"Programming Language :: Python :: 3.7",
-		"Programming Language :: Python :: 3.8",
-		"Programming Language :: Python :: 3 :: Only",
-		"Programming Language :: Python :: Implementation :: CPython",
-		
-		"Topic :: Education",
-		"Topic :: Scientific/Engineering :: Bio-Informatics",
-		"Topic :: Scientific/Engineering :: Chemistry",
-		"Topic :: Software Development :: Libraries :: Python Modules",
-		]
+'''

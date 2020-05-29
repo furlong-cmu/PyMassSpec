@@ -60,14 +60,14 @@ def window_smooth(ic, window=__DEFAULT_WINDOW, use_median=False):
     :author: Vladimir Likic
     :author: Dominic Davis-Foster (type assertions)
     """
-    
+
     if not isinstance(ic, IonChromatogram):
         raise TypeError("'ic' must be an IonChromatogram object")
     if not isinstance(window, (int, str)):
         raise TypeError("'window' must be a int or string")
     if not isinstance(use_median, bool):
         raise TypeError("'median' must be a Boolean")
-    
+
     ia = ic.intensity_array
 
     wing_length = ic_window_points(ic, window, half_window=True)
@@ -103,19 +103,19 @@ def window_smooth_im(im, window=__DEFAULT_WINDOW, use_median=False):
     :author: Sean O'Callaghan
     :author: Vladimir Likic
     """
-    
+
     if not isinstance(im, IntensityMatrix):
         raise TypeError("'im' must be an IntensityMatrix object")
-    
+
     n_scan, n_mz = im.size
-    
+
     im_smooth = copy.deepcopy(im)
-    
+
     for ii in range(n_mz):
         ic = im_smooth.get_ic_at_index(ii)
         ic_smooth = window_smooth(ic, window, use_median)
         im_smooth.set_ic_at_index(ii, ic_smooth)
-        
+
     return im_smooth
 
 

@@ -29,7 +29,7 @@ from pyms.GCMS.IO.JCAMP import JCAMP_reader
 
 jcamp_file = data_directory / "gc01_0812_066.jdx"
 data = JCAMP_reader(jcamp_file)
-data
+print(data)
 
 
 # ### A GCMS_data Object
@@ -51,13 +51,13 @@ data
 # In[3]:
 
 
-data.min_mass
+print(data.min_mass)
 
 
 # In[4]:
 
 
-data.max_mass
+print(data.max_mass)
 
 
 # A list of the first 10 retention times can be returned with:
@@ -65,7 +65,7 @@ data.max_mass
 # In[5]:
 
 
-data.time_list[:10]
+print(data.time_list[:10])
 
 
 # The index of a specific retention time (in seconds) can be returned with:
@@ -87,7 +87,7 @@ data.get_index_at_time(400.0)
 # In[7]:
 
 
-data.tic
+print(data.tic)
 
 
 # The |IonChromatogram| object is explained in a later example.
@@ -104,7 +104,7 @@ data.tic
 
 
 scans = data.scan_list
-scans[:10]
+print(scans[:10])
 
 
 # A list of the first 10 masses in a scan (e.g. the 1st scan) is returned with:
@@ -112,7 +112,7 @@ scans[:10]
 # In[9]:
 
 
-scans[0].mass_list[:10]
+print(scans[0].mass_list[:10])
 
 
 # A list of the first 10 corresponding intensities in a scan is returned with:
@@ -120,7 +120,7 @@ scans[0].mass_list[:10]
 # In[10]:
 
 
-scans[0].intensity_list[0]
+print(scans[0].intensity_list[0])
 
 
 # The minimum and maximum mass in an individual scan (e.g. the 1st scan) are
@@ -129,13 +129,13 @@ scans[0].intensity_list[0]
 # In[11]:
 
 
-scans[0].min_mass
+print(scans[0].min_mass)
 
 
 # In[12]:
 
 
-scans[0].max_mass
+print(scans[0].max_mass)
 
 
 # ### Exporting data and obtaining information about a data set

@@ -27,20 +27,16 @@ Base for PyMassSpec classes
 import pathlib
 import pickle
 
-# 3rd party
-import numpy
-
 # this package
 from pyms.Utils.IO import prepare_filepath
-
-_list_types = (list, tuple, numpy.core.ndarray)
-_path_types = (str, pathlib.Path)
+from pyms.Utils.Utils import is_path
 
 
 class pymsBaseClass:
 	"""
 	Base class
 	"""
+
 	def dump(self, file_name, protocol=3):
 		"""
 		Dumps an object to a file through pickle.dump()
@@ -53,12 +49,12 @@ class pymsBaseClass:
 		:author: Vladimir Likic
 		:author: Dominic Davis-Foster (pathlib and pickle protocol support)
 		"""
-		
-		if not isinstance(file_name, _path_types):
-			raise TypeError("'file_name' must be a string or a pathlib.Path object")
-		
+
+		if not is_path(file_name):
+			raise TypeError("'file_name' must be a string or a PathLike object")
+
 		file_name = prepare_filepath(file_name)
-		
+
 		fp = file_name.open('wb')
 		pickle.dump(self, fp, protocol=protocol)
 		fp.close()
