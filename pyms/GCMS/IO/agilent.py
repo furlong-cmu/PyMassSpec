@@ -184,8 +184,9 @@ def load_xic(d_file, data, options):
         # Mass values
         d_file.seek(offset[i] + 18)
         for _ in range(n_i):
-            mz_val = uint16(d_file.read(2))
-            mz_val = round((mz_val / 20.)*10**(options.precision))/options.precision
+            mz_reading = uint16(d_file.read(2))
+            mz_val =  mz_reading / 20
+            mz_val = round(mz_val * 10**options.precision) / (10**options.precision)
             mz.append(mz_val)
 
             xic_val = uint16(d_file.read(2))
