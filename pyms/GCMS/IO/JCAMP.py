@@ -91,7 +91,7 @@ def JCAMP_reader(file_name):
 
 					# Check to make sure time is not already in the time list;
 					# Can happen when both ##PAGE and ##RETENTION_TIME are specified
-					if time_list[-1] != time:
+					if len(time_list) == 0 or time_list[-1] != time:
 						time_list.append(time)
 
 				elif fields[0] in xydata_tags:
