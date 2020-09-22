@@ -103,6 +103,9 @@ class Scan(pymsBaseClass, MassListMixin):
 				warnings.warn("""Unknown sort order for mass list; it doesn't appear to be in either ascending or descending order.
 Please report this at https://github.com/domdfcoding/pymassspec/issues and upload an example data file if possible.
 """)
+				arg_sort = numpy.argsort(mass_list)
+				mass_list = [mass_list[i] for i in arg_sort]
+				intensity_list = [intensity_list[i] for i in arg_sort]
 
 		self._mass_list = mass_list
 		self._intensity_list = intensity_list
